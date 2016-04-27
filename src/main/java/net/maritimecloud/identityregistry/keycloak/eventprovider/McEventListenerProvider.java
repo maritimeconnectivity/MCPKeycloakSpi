@@ -138,6 +138,10 @@ public class McEventListenerProvider implements EventListenerProvider {
                 }
                 mcUser.setUserOrgId(user.getUsername());
             }
+            if (orgShortName == null || orgShortName.isEmpty()) {
+                log.warn("No org shortname found, skipping user sync");
+                return;
+            }
             List<String> permissionsList = user.getAttributes().get("permissions");
             if (permissionsList != null && permissionsList.size() > 0) {
                 mcUser.setPermissions(String.join(", ", permissionsList));
