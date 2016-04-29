@@ -5,6 +5,10 @@
 # A trust and keystore must also be placed in the folder.
 FROM jboss/keycloak-mysql:latest
 
+# Change the standalone.xml to support https-proxy-forwarding
+ADD proxy-forward.xslt /opt/jboss/keycloak/
+RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; rm /opt/jboss/keycloak/proxy-forward.xslt
+
 USER root
 RUN mkdir -p /mc-eventprovider-conf
 # Hack to copy the customized keycloak-server.json to keycloak at runtime
