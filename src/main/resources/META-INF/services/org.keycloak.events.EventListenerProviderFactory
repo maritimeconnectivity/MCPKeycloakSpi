@@ -1,1 +1,1 @@
-net.maritimecloud.identityregistry.keycloak.eventprovider.McEventListenerProviderFactory
+net.maritimecloud.identityregistry.keycloak.spi.eventprovider.McEventListenerProviderFactory

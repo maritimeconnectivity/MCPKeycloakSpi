@@ -1,4 +1,4 @@
-package net.maritimecloud.identityregistry.keycloak.eventprovider;
+package net.maritimecloud.identityregistry.keycloak.spi.eventprovider;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
