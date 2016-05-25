@@ -15,7 +15,7 @@ RUN mkdir -p /mc-eventprovider-conf
 RUN sed -i '2icp /mc-eventprovider-conf/keycloak-server.json /opt/jboss/keycloak/standalone/configuration/' /opt/jboss/docker-entrypoint.sh
 
 USER jboss
-RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloudEventProvider/lastSuccessfulBuild/artifact/target/mc-identityregistry-keycloak-eventprovider-latest.jar
+RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloudKeycloakSpi/lastSuccessfulBuild/artifact/target/mc-identityregistry-keycloak-spi-latest.jar
 
 ENV MYSQL_DATABASE keycloak
 ENV MYSQL_USERNAME keycloak
