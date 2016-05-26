@@ -77,7 +77,7 @@ public class IdpUpdateNoPromptAuthenticatorFactory implements AuthenticatorFacto
 
     @Override
     public String getDisplayType() {
-        return "Update user without prompting for review.";
+        return "Update user without prompting for review";
     }
 
     @Override

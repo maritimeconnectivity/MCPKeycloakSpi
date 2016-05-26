@@ -24,7 +24,9 @@ The keystore holds the certificate to authenticate the eventlistener, while the 
 After doing the setup as described above, go into the admin console in Keycloak and go to Events in the left side menu. Go to the Config tab, add mc-event-listener to the Event Listeners and click Save.
 
 
-## Authenticator for updating without prompt
+## Authenticator for updating without prompt (not included in build!)
+**This implementation is defunct, not used and not included in the build!** Edit the pom.xml to enabled the build.
+
 This SPI is implemented in order to allow copying of user data from IDPs to the local Keycloak without prompting the user for review or trying to link existing accounts.
 
 The authenticator is available in Keycloaks Authentication Flow configuration screen when adding new execution as "Update user without prompting for review".

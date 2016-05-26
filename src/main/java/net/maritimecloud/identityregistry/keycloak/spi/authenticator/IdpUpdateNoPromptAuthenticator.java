@@ -112,23 +112,6 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
         return realm.isRegistrationEmailAsUsername() ? brokerContext.getEmail() : brokerContext.getModelUsername();
     }
 
-    // Could be overriden to detect duplication based on other criterias (firstName, lastName, ...)
-    protected ExistingUserInfo checkExistingUser(AuthenticationFlowContext context, String username, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
-
-        /*if (brokerContext.getEmail() != null) {
-            UserModel existingUser = context.getSession().users().getUserByEmail(brokerContext.getEmail(), context.getRealm());
-            if (existingUser != null) {
-                return new ExistingUserInfo(existingUser.getId(), UserModel.EMAIL, existingUser.getEmail());
-            }
-        }*/
-
-        UserModel existingUser = context.getSession().users().getUserByUsername(username, context.getRealm());
-        if (existingUser != null) {
-            return new ExistingUserInfo(existingUser.getId(), UserModel.USERNAME, existingUser.getUsername());
-        }
-
-        return null;
-    }
     @Override
     protected void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx,
             BrokeredIdentityContext brokerContext) {
