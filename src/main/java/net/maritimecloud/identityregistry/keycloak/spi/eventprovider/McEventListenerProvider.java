@@ -39,6 +39,7 @@ import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
@@ -211,17 +212,19 @@ public class McEventListenerProvider implements EventListenerProvider {
     }
 
     private CloseableHttpClient buildHttpClient() {
-        KeyStore keyStore;
-        KeyStore trustStore;
+        KeyStore keyStore = null;
+        KeyStore trustStore = null;
         FileInputStream instreamKeystore = null;
         FileInputStream instreamTruststore = null;
         try {
             keyStore = KeyStore.getInstance("jks");
-            trustStore = KeyStore.getInstance("jks");
             instreamKeystore = new FileInputStream(keystorePath);
-            instreamTruststore = new FileInputStream(truststorePath);
             keyStore.load(instreamKeystore, keystorePassword.toCharArray());
-            trustStore.load(instreamTruststore, truststorePassword.toCharArray());
+            if (truststorePath != null && !truststorePath.isEmpty()) {
+                trustStore = KeyStore.getInstance("jks");
+                instreamTruststore = new FileInputStream(truststorePath);
+                trustStore.load(instreamTruststore, truststorePassword.toCharArray());
+            }
         } catch (NoSuchAlgorithmException e) {
             log.error("Threw exception", e);
             return null;
@@ -250,10 +253,14 @@ public class McEventListenerProvider implements EventListenerProvider {
         // Trust own CA and all self-signed certs
         SSLContext sslcontext;
         try {
-            sslcontext = SSLContexts.custom()
-                                    .loadKeyMaterial(keyStore, keystorePassword.toCharArray())
-                                    .loadTrustMaterial(trustStore, new TrustSelfSignedStrategy()) //if you have a trust store
-                                    .build();
+            SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+            sslContextBuilder.loadKeyMaterial(keyStore, keystorePassword.toCharArray());
+            // If you have a trust store
+            if (trustStore != null) {
+                sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
+            }
+            sslContextBuilder.loadKeyMaterial(keyStore, keystorePassword.toCharArray());
+            sslcontext = sslContextBuilder.build();
         } catch (KeyManagementException e) {
             log.error("Threw exception", e);
             return null;
