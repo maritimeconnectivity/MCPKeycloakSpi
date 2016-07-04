@@ -255,7 +255,7 @@ public class McEventListenerProvider implements EventListenerProvider {
         try {
             SSLContextBuilder sslContextBuilder = SSLContexts.custom();
             sslContextBuilder.loadKeyMaterial(keyStore, keystorePassword.toCharArray());
-            // If you have a trust store
+            // If you have a trust store - should only be needed when the site we contact use self-signed certificates.
             if (trustStore != null) {
                 sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
             }
