@@ -14,7 +14,8 @@ RUN mkdir -p /mc-eventprovider-conf
 # Hack to copy the customized keycloak-server.json to keycloak at runtime
 RUN sed -i '2icp /mc-eventprovider-conf/keycloak-server.json /opt/jboss/keycloak/standalone/configuration/' /opt/jboss/docker-entrypoint.sh
 
-# Replace OpenJDK with Oracle JDK to get proper certificate support
+# Replace OpenJDK with Oracle JDK to get proper certificate support.
+# Once CentOS 7.3 is released this should not be needed anymore.
 RUN yum -y remove java-1.8.0-openjdk && \
     curl -L --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u91-b14/jdk-8u91-linux-x64.rpm -o jdk-X-linux-x64.rpm && \
     rpm -ivh jdk-X-linux-x64.rpm && \
