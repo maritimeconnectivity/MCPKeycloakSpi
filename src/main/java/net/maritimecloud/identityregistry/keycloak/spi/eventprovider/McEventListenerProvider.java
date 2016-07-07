@@ -119,7 +119,7 @@ public class McEventListenerProvider implements EventListenerProvider {
         log.info("event info: " + sb.toString());
 
         // Only users coming from an identity provider is sync'ed.
-        if (identityProvider != null) {
+        if (identityProvider == null) {
             log.info("no identity provider found for this user, so sync skipped!");
             return;
         }
