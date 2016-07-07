@@ -78,7 +78,7 @@ public class McEventListenerProvider implements EventListenerProvider {
 
     public void onEvent(Event event) {
         // We only worry about IDENTITY_PROVIDER_LOGIN events.
-        if (event.getType() != EventType.IDENTITY_PROVIDER_LOGIN) {
+        if (event.getType() != EventType.LOGIN && event.getType() != EventType.IDENTITY_PROVIDER_LOGIN) {
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -98,9 +98,12 @@ public class McEventListenerProvider implements EventListenerProvider {
             sb.append(", error=");
             sb.append(event.getError());
         }
-
+        String identityProvider = null;
         if (event.getDetails() != null) {
             for (Map.Entry<String, String> e : event.getDetails().entrySet()) {
+                if ("identity_provider".equals(e.getKey())) {
+                    identityProvider = e.getValue();
+                }
                 sb.append(", ");
                 sb.append(e.getKey());
                 if (e.getValue() == null || e.getValue().indexOf(' ') == -1) {
@@ -114,6 +117,13 @@ public class McEventListenerProvider implements EventListenerProvider {
             }
         }
         log.info("event info: " + sb.toString());
+
+        // Only users coming from an identity provider is sync'ed.
+        if (identityProvider != null) {
+            log.info("no identity provider found for this user, so sync skipped!");
+            return;
+        }
+
         if (event.getRealmId() != null && event.getUserId() != null) {
             RealmModel realm = session.realms().getRealm(event.getRealmId());
             UserModel user = session.users().getUserById(event.getUserId(), realm);
