@@ -36,6 +36,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -176,7 +177,7 @@ public class McEventListenerProvider implements EventListenerProvider {
         CloseableHttpResponse response = null;
         try {
             String serializedUser = JsonSerialization.writeValueAsString(user);
-            StringEntity input = new StringEntity(serializedUser);
+            StringEntity input = new StringEntity(serializedUser, ContentType.APPLICATION_JSON);
             input.setContentType("application/json");
             post.setEntity(input);
             log.info("user json: " + serializedUser);
@@ -202,7 +203,7 @@ public class McEventListenerProvider implements EventListenerProvider {
                 client.close();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("Threw exception", e);
             }
         }
     }
