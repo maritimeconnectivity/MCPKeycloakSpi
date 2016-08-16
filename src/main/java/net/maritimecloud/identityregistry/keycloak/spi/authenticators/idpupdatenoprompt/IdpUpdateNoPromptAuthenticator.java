@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.keycloak.spi.authenticator;
+package net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt;
 
 import java.util.List;
 import java.util.Map;
@@ -24,8 +24,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import net.maritimecloud.identityregistry.keycloak.spi.authenticator.util.ExistingUserInfo;
-import net.maritimecloud.identityregistry.keycloak.spi.authenticator.util.SerializedBrokeredIdentityContext;
+import net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util.SerializedBrokeredIdentityContext;
 
 /**
  * Authenticator that copies the user from a IDP into either a new user, or

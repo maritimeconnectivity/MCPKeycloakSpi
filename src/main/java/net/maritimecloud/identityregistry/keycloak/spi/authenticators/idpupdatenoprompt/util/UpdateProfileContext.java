@@ -16,7 +16,7 @@
  */
 //package org.keycloak.authentication.requiredactions.util;
 
-package net.maritimecloud.identityregistry.keycloak.spi.authenticator.util;
+package net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util;
 
 import java.util.List;
 import java.util.Map;

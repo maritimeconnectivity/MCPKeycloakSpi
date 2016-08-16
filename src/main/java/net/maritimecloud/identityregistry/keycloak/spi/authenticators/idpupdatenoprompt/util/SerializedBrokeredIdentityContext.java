@@ -16,7 +16,7 @@
  */
 
 //package org.keycloak.authentication.authenticators.broker.util;
-package net.maritimecloud.identityregistry.keycloak.spi.authenticator.util;
+package net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util;
 
 import java.io.IOException;
 import java.util.ArrayList;

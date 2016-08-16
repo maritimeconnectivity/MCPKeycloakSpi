@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.keycloak.spi.authenticator;
+package net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt;
 
 import java.util.ArrayList;
 import java.util.List;

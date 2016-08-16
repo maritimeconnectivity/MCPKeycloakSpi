@@ -17,7 +17,7 @@
 
 //package org.keycloak.authentication.authenticators.broker;
 
-package net.maritimecloud.identityregistry.keycloak.spi.authenticator;
+package net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt;
 
 import javax.ws.rs.core.Response;
 
@@ -35,8 +35,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 //import org.keycloak.services.messages.Messages;
 
-import net.maritimecloud.identityregistry.keycloak.spi.authenticator.util.ExistingUserInfo;
-import net.maritimecloud.identityregistry.keycloak.spi.authenticator.util.SerializedBrokeredIdentityContext;
+import net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util.ExistingUserInfo;
+import net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util.SerializedBrokeredIdentityContext;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
