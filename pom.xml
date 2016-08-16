@@ -66,16 +66,6 @@
         </configuration>
       </plugin>
     </plugins>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <!-- This is to exclude the authenticators implementation that is defunct and not used -->
-        <excludes>
-          <exclude>**/org.keycloak.authentication.AuthenticatorFactory</exclude>
-        </excludes>
-        <filtering>false</filtering>
-      </resource>
-    </resources>
   </build>
 
 </project>

@@ -24,6 +24,13 @@ The keystore holds the certificate to authenticate the eventlistener, while the 
 After doing the setup as described above, go into the admin console in Keycloak and go to Events in the left side menu. Go to the Config tab, add mc-event-listener to the Event Listeners and click Save.
 
 
+## Authenticator using X.509 certificates
+
+The purpose of this SPI is to allow users to authenticate using X.509 certificates. This is meant as a "bridge" where a certificate can be converted into a OpenId Connect token.
+
+This SPI is still work in progress!!
+
+
 ## Authenticator for updating without prompt (not included in build!)
 **This implementation is defunct, not used and not included in the build!** Edit the pom.xml to enabled the build.
 
