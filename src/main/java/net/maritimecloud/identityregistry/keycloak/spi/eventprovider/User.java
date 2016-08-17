@@ -18,67 +18,77 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
-* Model object representing an user
-*/
+ * Model object representing an user
+ */
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class User {
 
-   public User() {
-   }
+    public User() {
+    }
 
-   private String userOrgId;
+    private String userOrgId;
 
-   private String firstName;
+    private String firstName;
 
-   private String lastName;
+    private String lastName;
 
-   private String email;
+    private String email;
 
-   private String permissions;
+    private String permissions;
 
-   /******************************/
-   /** Getters and setters      **/
-   /******************************/
-   public String getUserOrgId() {
-       return userOrgId;
-   }
+    private String mrn;
 
-   public void setUserOrgId(String userOrgId) {
-       this.userOrgId = userOrgId;
-   }
+    /******************************/
+    /** Getters and setters      **/
+    /******************************/
+    public String getUserOrgId() {
+        return userOrgId;
+    }
 
-   public String getFirstName() {
-       return firstName;
-   }
+    public void setUserOrgId(String userOrgId) {
+        this.userOrgId = userOrgId;
+    }
 
-   public void setFirstName(String firstName) {
-       this.firstName = firstName;
-   }
+    public String getFirstName() {
+        return firstName;
+    }
 
-   public String getLastName() {
-       return lastName;
-   }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-   public void setLastName(String lastName) {
-       this.lastName = lastName;
-   }
+    public String getLastName() {
+        return lastName;
+    }
 
-   public String getEmail() {
-       return email;
-   }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-   public void setEmail(String email) {
-       this.email = email;
-   }
+    public String getEmail() {
+        return email;
+    }
 
-   public String getPermissions() {
-       return permissions;
-   }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-   public void setPermissions(String permissions) {
-       this.permissions = permissions;
-   }
+    public String getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String permissions) {
+        this.permissions = permissions;
+    }
+
+    public String getMrn() {
+        return mrn;
+    }
+
+    public void setMrn(String mrn) {
+        this.mrn = mrn;
+    }
 }
 

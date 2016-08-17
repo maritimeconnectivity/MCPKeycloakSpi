@@ -91,7 +91,9 @@ public class CertificateUtil {
     public static final String MC_OID_PERMISSIONS      = "2.25.174437629172304915481663724171734402331";
     public static final String MC_OID_PORT_OF_REGISTER = "2.25.285632790821948647314354670918887798603";
 
-    public CertificateUtil() {
+    public CertificateUtil(String truststorePath, String truststorePassword) {
+        TRUSTSTORE_PATH = truststorePath;
+        TRUSTSTORE_PASSWORD = truststorePassword;
     }
 
 

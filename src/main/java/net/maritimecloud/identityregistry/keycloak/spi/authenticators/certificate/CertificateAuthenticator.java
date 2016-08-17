@@ -31,7 +31,17 @@ import java.util.List;
 import java.util.Map;
 
 public class CertificateAuthenticator implements Authenticator {
+
+    private String truststorePath = "";
+    private String truststorePassword = "";
+
     private static final Logger log = Logger.getLogger(CertificateAuthenticator.class);
+
+    public CertificateAuthenticator(String truststorePath, String truststorePassword) {
+        this.truststorePath = truststorePath;
+        this.truststorePassword = truststorePassword;
+    }
+
     @Override
     public void authenticate(AuthenticationFlowContext authenticationFlowContext) {
         // Get the client certificate from the HTTP header
@@ -41,7 +51,7 @@ public class CertificateAuthenticator implements Authenticator {
             throw new AuthenticationFlowException("No client certificate detected!", AuthenticationFlowError.INVALID_USER);
         }
         // Convert the header string to a certificate
-        CertificateUtil certUtil = new CertificateUtil();
+        CertificateUtil certUtil = new CertificateUtil(this.truststorePath, this.truststorePassword);
         X509Certificate userCertificate = certUtil.getCertFromString(certStrList.get(0));
         if (userCertificate == null) {
             throw new AuthenticationFlowException("Could not read client certificate!", AuthenticationFlowError.INVALID_USER);

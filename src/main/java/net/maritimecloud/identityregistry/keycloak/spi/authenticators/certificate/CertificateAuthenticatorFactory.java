@@ -29,12 +29,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "certificate";
-    private String serverRoot = "";
-    private String keystorePath = "";
-    private String keystorePassword = "";
-    private String truststorePath = "";
-    private String truststorePassword = "";
-    static CertificateAuthenticator SINGLETON = new CertificateAuthenticator();
+    static CertificateAuthenticator SINGLETON = null;
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -43,11 +38,11 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public void init(Config.Scope config) {
-        serverRoot = config.get("server-root");
-        keystorePath = config.get("keystore-path");
-        keystorePassword = config.get("keystore-password");
-        truststorePath = config.get("truststore-path");
-        truststorePassword = config.get("truststore-password");
+        if (SINGLETON == null) {
+            String truststorePath = config.get("truststore-path");
+            String truststorePassword = config.get("truststore-password");
+            SINGLETON = new CertificateAuthenticator(truststorePath, truststorePassword);
+        }
     }
 
     @Override

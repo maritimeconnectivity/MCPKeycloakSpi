@@ -16,14 +16,21 @@
 
     "eventsListener": {
         "mc-event-listener" : {
-            "server-root": "https://localhost:8443",
+            "server-root": "https://localhost",
             "keystore-path": "/mc-eventprovider-conf/idbroker-updater.jks",
             "keystore-password": "changeit",
+            "truststore-path": "/mc-eventprovider-conf/mc-truststore.jks",
+            "truststore-password": "changeit",
+            "idp-not-to-sync": [ "certificate" ]
+        }
+    },
+
+    "authenticator": {
+        "certificate" : {
             "truststore-path": "/mc-eventprovider-conf/mc-truststore.jks",
             "truststore-password": "changeit"
         }
     },
-
     "realm": {
         "provider": "jpa"
     },

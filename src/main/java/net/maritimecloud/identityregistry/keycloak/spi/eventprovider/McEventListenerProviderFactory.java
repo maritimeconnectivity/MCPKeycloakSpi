@@ -27,6 +27,7 @@ public class McEventListenerProviderFactory implements EventListenerProviderFact
     private String keystorePassword = "";
     private String truststorePath = "";
     private String truststorePassword = "";
+    private String[] idpNotToSync = null;
 
     public String getId() {
         return "mc-event-listener";
@@ -38,6 +39,7 @@ public class McEventListenerProviderFactory implements EventListenerProviderFact
         keystorePassword = config.get("keystore-password");
         truststorePath = config.get("truststore-path");
         truststorePassword = config.get("truststore-password");
+        idpNotToSync = config.getArray("idp-not-to-sync");
     }
 
     public void close() {
@@ -46,7 +48,7 @@ public class McEventListenerProviderFactory implements EventListenerProviderFact
     }
 
     public EventListenerProvider create(KeycloakSession session) {
-        return new McEventListenerProvider(session, serverRoot, keystorePath, keystorePassword, truststorePath, truststorePassword);
+        return new McEventListenerProvider(session, serverRoot, keystorePath, keystorePassword, truststorePath, truststorePassword, idpNotToSync);
     }
 
     public void postInit(KeycloakSessionFactory arg0) {

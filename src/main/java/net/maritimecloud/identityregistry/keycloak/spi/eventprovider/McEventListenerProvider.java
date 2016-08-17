@@ -23,9 +23,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import javax.net.ssl.SSLContext;
 
@@ -62,14 +62,16 @@ public class McEventListenerProvider implements EventListenerProvider {
     private String keystorePassword = "";
     private String truststorePath = "";
     private String truststorePassword = "";
+    private String[] idpNotToSync = null;
 
-    public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword) {
+    public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
         this.session = session;
         this.serverRoot = serverRoot;
         this.keystorePath = keystorePath;
         this.keystorePassword = keystorePassword;
         this.truststorePath = truststorePath;
         this.truststorePassword = truststorePassword;
+        this.idpNotToSync = idpNotToSync;
     }
 
     public void close() {
@@ -125,6 +127,12 @@ public class McEventListenerProvider implements EventListenerProvider {
             return;
         }
 
+        // we skip certain identity providers
+        if (Arrays.binarySearch(idpNotToSync, identityProvider.toCharArray()) < 0) {
+            log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
+            return;
+        }
+
         if (event.getRealmId() != null && event.getUserId() != null) {
             RealmModel realm = session.realms().getRealm(event.getRealmId());
             UserModel user = session.users().getUserById(event.getUserId(), realm);
@@ -158,7 +166,12 @@ public class McEventListenerProvider implements EventListenerProvider {
             if (permissionsList != null && permissionsList.size() > 0) {
                 mcUser.setPermissions(String.join(", ", permissionsList));
             }
-            
+
+            List<String> mrnList = user.getAttributes().get("mrn");
+            if (mrnList != null && mrnList.size() > 0) {
+                mcUser.setMrn(String.join(", ", mrnList));
+            }
+
             if (user != null && user.getAttributes() != null) {
                 for (Map.Entry<String, List<String>> e: user.getAttributes().entrySet()) {
                     log.info("user attr: " + e.getKey() + ", value: "  + String.join(", ", e.getValue()));

@@ -14,7 +14,8 @@ This is used to keep the user database in the MaritimeCloud Identity Registry AP
 			"keystore-path": "idbroker-updater.jks",
 			"keystore-password": "changeit",
 			"truststore-path": "mc-truststore.jks",
-			"truststore-password": "changeit"
+			"truststore-password": "changeit",
+			"idp-not-to-sync": [ "certificate" ]
 		}
 	},
 ```
