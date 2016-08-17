@@ -48,29 +48,34 @@ public class CertificateAuthenticator implements Authenticator {
         HttpRequest req = authenticationFlowContext.getHttpRequest();
         List<String> certStrList = req.getHttpHeaders().getRequestHeader("X-Client-Certificate");
         if (certStrList.size() != 1) {
+            log.debug("No client certificate detected!");
             throw new AuthenticationFlowException("No client certificate detected!", AuthenticationFlowError.INVALID_USER);
         }
         // Convert the header string to a certificate
         CertificateUtil certUtil = new CertificateUtil(this.truststorePath, this.truststorePassword);
         X509Certificate userCertificate = certUtil.getCertFromString(certStrList.get(0));
         if (userCertificate == null) {
+            log.debug("Could not read client certificate!");
             throw new AuthenticationFlowException("Could not read client certificate!", AuthenticationFlowError.INVALID_USER);
         }
         // Actually authenticate certificate against root cert.
         if (!certUtil.verifyCertificate(userCertificate)) {
+            log.debug("Could not validate client certificate!");
             throw new AuthenticationFlowException("Could not validate client certificate!", AuthenticationFlowError.INVALID_USER);
         }
         // Get user details from the certificate
         Map<String, String> user = certUtil.getUserFromCert(userCertificate);
         if (user == null || user.isEmpty()) {
+            log.debug("Extraction of data from the certificate failed!");
             throw new AuthenticationFlowException("Extraction of data from the certificate failed!", AuthenticationFlowError.INVALID_USER);
         }
 
         // Check for required data
         String fullname = user.get("fullname");
         String orgUserName = user.get("orgUserName");
-        String org = user.get("org");
+        String org = user.get("orgShortName");
         if (fullname == null || fullname.isEmpty() || orgUserName == null || orgUserName.isEmpty() || org == null || org.isEmpty()) {
+            log.debug("Required data is not available in client certificate!");
             throw new AuthenticationFlowException("Required data is not available in client certificate!", AuthenticationFlowError.INVALID_USER);
         }
         KeycloakSession session = authenticationFlowContext.getSession();
@@ -79,8 +84,7 @@ public class CertificateAuthenticator implements Authenticator {
         // Try to find existing user
         UserModel existingUser = session.users().getUserByUsername(orgUserName, authenticationFlowContext.getRealm());
         if (existingUser == null) {
-            //log.debugf("No duplication detected. Creating account for user '%s' and linking with identity provider '%s' .",
-            //        username, brokerContext.getIdpConfig().getAlias());
+            log.debugf("No duplication detected. Creating account for user '%s'.", orgUserName);
 
             UserModel federatedUser = session.users().addUser(realm, orgUserName);
             federatedUser.setEnabled(true);
@@ -96,7 +100,7 @@ public class CertificateAuthenticator implements Authenticator {
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             authenticationFlowContext.success();
         } else {
-            log.debugf("Duplication detected. There is already existing user with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
+            log.debugf("Existing detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
             existingUser.setEmail(user.get("email"));
             existingUser.setFirstName(user.get("firstName"));

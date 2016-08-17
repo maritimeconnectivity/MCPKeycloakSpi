@@ -108,11 +108,17 @@ public class CertificateUtil {
 
         // nginx forwards the certificate in a header by replacing new lines with whitespaces
         // (2 or more). Also replace tabs, which nginx sometimes sends instead of whitespaces.
-        String certificateContent = certificateHeader.replaceAll("\\s{2,}", System.lineSeparator()).replaceAll("\\t+", System.lineSeparator());
+        // Special changes for keycloak: Wildfly(?) seems to strip "unneeded" double whitespaces
+        //String certificateContent = certificateHeader.replaceAll("\\s{2,}", System.lineSeparator()).replaceAll("\\t+", System.lineSeparator());
+        String certificateContent = certificateHeader.replaceAll("\\s", System.lineSeparator()).replaceAll("\\t+", System.lineSeparator());
         if (certificateContent == null || certificateContent.length() < 10) {
             logger.debug("No certificate content found");
             return null;
         }
+        // Special changes for keycloak: Restore the first and the last whitespace (-----BEGIN CERTIFICATE----- and -----END CERTIFICATE-----)
+        certificateContent = certificateContent.replace("-----BEGIN\nCERTIFICATE-----", "-----BEGIN CERTIFICATE-----");
+        certificateContent = certificateContent.replace("-----END\nCERTIFICATE-----", "-----END CERTIFICATE-----");
+
         X509Certificate userCertificate = null;
         try {
             userCertificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(certificateContent.getBytes("ISO-8859-11")));
@@ -128,6 +134,7 @@ public class CertificateUtil {
         Map<String, String> user = new HashMap<>();
         String certDN = userCertificate.getSubjectDN().getName();
         X500Name x500name = new X500Name(certDN);
+        logger.warn("Parsed certificate, DN: " + certDN);
         String fullname = getElement(x500name, BCStyle.CN);
         user.put("fullname", fullname);
         String combinedOrg = getElement(x500name, BCStyle.O);
@@ -148,24 +155,12 @@ public class CertificateUtil {
         user.put("orgShortName", orgShortName);
         user.put("orgFullName", orgNames[1]);
         // prefix orgUserName with org shortname if not already done
-        String orgUserName = getElement(x500name, BCStyle.OU).toLowerCase();
+        String orgUserName = getElement(x500name, BCStyle.UID).toLowerCase();
         if (!orgUserName.startsWith(orgShortName + ".")) {
             orgUserName = orgShortName.toLowerCase() + "." + orgUserName;
         }
-
-        user.put("orgUnitName", orgUserName);
-
-        /*essence.setUid(name);
-        essence.setDn(certDN);
-        essence.setCn(new String[] { name });
-        essence.setSn(name);
-        essence.setO(getElement(x500name, BCStyle.O));
-        essence.setOu(getElement(x500name, BCStyle.OU));
-        essence.setDescription(certDN);
-        // Hack alert! There is no country property in this type, so we misuse PostalAddress...
-        essence.setPostalAddress(getElement(x500name, BCStyle.C));*/
-        logger.debug("Parsed certificate, name: " + fullname);
-
+        user.put("orgUserName", orgUserName);
+        user.put("type", getElement(x500name, BCStyle.OU));
         // Extract info from Subject Alternative Name extension
         Collection<List<?>> san = null;
         try {
@@ -303,8 +298,12 @@ public class CertificateUtil {
      * @return
      */
     public static String getElement(X500Name x500name, ASN1ObjectIdentifier style) {
-        RDN cn = x500name.getRDNs(style)[0];
-        return valueToString(cn.getFirst().getValue());
+        try {
+            RDN cn = x500name.getRDNs(style)[0];
+            return valueToString(cn.getFirst().getValue());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "";
+        }
     }
 
     /**

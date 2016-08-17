@@ -30,6 +30,7 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "certificate";
     static CertificateAuthenticator SINGLETON = null;
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -67,7 +68,7 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public boolean isConfigurable() {
-        return true;
+        return false;
     }
 
     public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -81,7 +82,7 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public String getDisplayType() {
-        return "Authenticate users based on X.509 certificates.";
+        return "Certificates";
     }
 
     @Override
@@ -90,14 +91,13 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
     }
 
     @Override
+    public List<ProviderConfigProperty> getConfigProperties() {
+        return configProperties;
+    }
+
+    @Override
     public boolean isUserSetupAllowed() {
         return false;
     }
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-
-    @Override
-    public List<ProviderConfigProperty> getConfigProperties() {
-        return null;
-    }
 }
