@@ -92,9 +92,15 @@ public class CertificateAuthenticator implements Authenticator {
             federatedUser.setFirstName(user.get("firstName"));
             federatedUser.setLastName(user.get("lastName"));
 
-            federatedUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
-            federatedUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
-            federatedUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
+            if (!user.get("permissions").trim().isEmpty()) {
+                federatedUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
+            }
+            if (!user.get("mrn").trim().isEmpty()) {
+                federatedUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
+            }
+            if (!user.get("org").trim().isEmpty()) {
+                federatedUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
+            }
 
             authenticationFlowContext.setUser(federatedUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
@@ -110,9 +116,15 @@ public class CertificateAuthenticator implements Authenticator {
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
                 existingUser.removeAttribute(attr.getKey());
             }
-            existingUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
-            existingUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
-            existingUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
+            if (!user.get("permissions").trim().isEmpty()) {
+                existingUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
+            }
+            if (!user.get("mrn").trim().isEmpty()) {
+                existingUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
+            }
+            if (!user.get("org").trim().isEmpty()) {
+                existingUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
+            }
 
             authenticationFlowContext.setUser(existingUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
