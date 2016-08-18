@@ -81,6 +81,10 @@ public class CertificateAuthenticator implements Authenticator {
         KeycloakSession session = authenticationFlowContext.getSession();
         RealmModel realm = authenticationFlowContext.getRealm();
 
+        String permissions = user.get("permissions");
+        String mrn = user.get("mrn");
+        String orgShortName = user.get("orgShortName");
+
         // Try to find existing user
         UserModel existingUser = session.users().getUserByUsername(orgUserName, authenticationFlowContext.getRealm());
         if (existingUser == null) {
@@ -93,19 +97,19 @@ public class CertificateAuthenticator implements Authenticator {
             federatedUser.setLastName(user.get("lastName"));
 
             log.warn("About to set permissions attr to: " + user.get("permissions"));
-            if (!user.get("permissions").trim().isEmpty()) {
-                federatedUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
-                log.warn("Just set permissions attr to: " + user.get("permissions"));
+            if (permissions != null && !permissions.trim().isEmpty()) {
+                federatedUser.setAttribute("permissions", Arrays.asList(permissions));
+                log.warn("Just set permissions attr to: " + permissions);
             }
-            log.warn("About to set mrn attr to: " + user.get("mrn"));
-            if (!user.get("mrn").trim().isEmpty()) {
-                federatedUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
-                log.warn("Just set mrn attr to: " + user.get("mrn"));
+            log.warn("About to set mrn attr to: " + mrn);
+            if (mrn != null && !mrn.trim().isEmpty()) {
+                federatedUser.setAttribute("mrn", Arrays.asList(mrn));
+                log.warn("Just set mrn attr to: " + mrn);
             }
-            log.warn("About to set org attr to: " + user.get("orgShortName"));
-            if (!user.get("orgShortName").trim().isEmpty()) {
-                federatedUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
-                log.warn("Just set org attr to: " + user.get("orgShortName"));
+            log.warn("About to set org attr to: " + orgShortName);
+            if (orgShortName != null && !orgShortName.trim().isEmpty()) {
+                federatedUser.setAttribute("org", Arrays.asList(orgShortName));
+                log.warn("Just set org attr to: " + orgShortName);
             }
 
             authenticationFlowContext.setUser(federatedUser);
@@ -122,20 +126,20 @@ public class CertificateAuthenticator implements Authenticator {
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
                 existingUser.removeAttribute(attr.getKey());
             }
-            log.warn("About to set permissions attr to: " + user.get("permissions"));
-            if (!user.get("permissions").trim().isEmpty()) {
-                existingUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
-                log.warn("Just set permissions attr to: " + user.get("permissions"));
+            log.warn("About to set permissions attr to: " + permissions);
+            if (permissions != null && !permissions.trim().isEmpty()) {
+                existingUser.setAttribute("permissions", Arrays.asList(permissions));
+                log.warn("Just set permissions attr to: " + permissions);
             }
-            log.warn("About to set mrn attr to: " + user.get("mrn"));
-            if (!user.get("mrn").trim().isEmpty()) {
-                existingUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
-                log.warn("Just set mrn attr to: " + user.get("mrn"));
+            log.warn("About to set mrn attr to: " + mrn);
+            if (mrn != null && !mrn.trim().isEmpty()) {
+                existingUser.setAttribute("mrn", Arrays.asList(mrn));
+                log.warn("Just set mrn attr to: " + mrn);
             }
-            log.warn("About to set org attr to: " + user.get("orgShortName"));
-            if (!user.get("orgShortName").trim().isEmpty()) {
-                existingUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
-                log.warn("Just set org attr to: " + user.get("orgShortName"));
+            log.warn("About to set org attr to: " + orgShortName);
+            if (orgShortName != null && !orgShortName.trim().isEmpty()) {
+                existingUser.setAttribute("org", Arrays.asList(orgShortName));
+                log.warn("Just set org attr to: " + orgShortName);
             }
 
             authenticationFlowContext.setUser(existingUser);
