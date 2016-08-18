@@ -92,21 +92,27 @@ public class CertificateAuthenticator implements Authenticator {
             federatedUser.setFirstName(user.get("firstName"));
             federatedUser.setLastName(user.get("lastName"));
 
+            log.warn("About to set permissions attr to: " + user.get("permissions"));
             if (!user.get("permissions").trim().isEmpty()) {
                 federatedUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
+                log.warn("Just set permissions attr to: " + user.get("permissions"));
             }
+            log.warn("About to set mrn attr to: " + user.get("mrn"));
             if (!user.get("mrn").trim().isEmpty()) {
                 federatedUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
+                log.warn("Just set mrn attr to: " + user.get("mrn"));
             }
+            log.warn("About to set org attr to: " + user.get("orgShortName"));
             if (!user.get("orgShortName").trim().isEmpty()) {
                 federatedUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
+                log.warn("Just set org attr to: " + user.get("orgShortName"));
             }
 
             authenticationFlowContext.setUser(federatedUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             authenticationFlowContext.success();
         } else {
-            log.warnf("Existing detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
+            log.warnf("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
             existingUser.setEmail(user.get("email"));
             existingUser.setFirstName(user.get("firstName"));
@@ -116,20 +122,27 @@ public class CertificateAuthenticator implements Authenticator {
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
                 existingUser.removeAttribute(attr.getKey());
             }
+            log.warn("About to set permissions attr to: " + user.get("permissions"));
             if (!user.get("permissions").trim().isEmpty()) {
                 existingUser.setAttribute("permissions", Arrays.asList(user.get("permissions")));
+                log.warn("Just set permissions attr to: " + user.get("permissions"));
             }
+            log.warn("About to set mrn attr to: " + user.get("mrn"));
             if (!user.get("mrn").trim().isEmpty()) {
                 existingUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
+                log.warn("Just set mrn attr to: " + user.get("mrn"));
             }
+            log.warn("About to set org attr to: " + user.get("orgShortName"));
             if (!user.get("orgShortName").trim().isEmpty()) {
                 existingUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
+                log.warn("Just set org attr to: " + user.get("orgShortName"));
             }
 
             authenticationFlowContext.setUser(existingUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             authenticationFlowContext.success();
         }
+        log.warn("Authentication flow succesfully completed!");
     }
 
     @Override
