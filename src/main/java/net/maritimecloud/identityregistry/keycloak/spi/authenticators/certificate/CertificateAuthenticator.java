@@ -98,7 +98,7 @@ public class CertificateAuthenticator implements Authenticator {
             if (!user.get("mrn").trim().isEmpty()) {
                 federatedUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
             }
-            if (!user.get("org").trim().isEmpty()) {
+            if (!user.get("orgShortName").trim().isEmpty()) {
                 federatedUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
             }
 
@@ -122,7 +122,7 @@ public class CertificateAuthenticator implements Authenticator {
             if (!user.get("mrn").trim().isEmpty()) {
                 existingUser.setAttribute("mrn", Arrays.asList(user.get("mrn")));
             }
-            if (!user.get("org").trim().isEmpty()) {
+            if (!user.get("orgShortName").trim().isEmpty()) {
                 existingUser.setAttribute("org", Arrays.asList(user.get("orgShortName")));
             }
 
