@@ -74,6 +74,7 @@ public class CertificateAuthenticator implements Authenticator {
         String fullname = user.get("fullname");
         String orgUserName = user.get("orgUserName");
         String org = user.get("orgShortName");
+        String email = user.get("email");
         if (fullname == null || fullname.isEmpty() || orgUserName == null || orgUserName.isEmpty() || org == null || org.isEmpty()) {
             log.warn("Required data is not available in client certificate!");
             throw new AuthenticationFlowException("Required data is not available in client certificate!", AuthenticationFlowError.INVALID_USER);
@@ -92,7 +93,9 @@ public class CertificateAuthenticator implements Authenticator {
 
             UserModel federatedUser = session.users().addUser(realm, orgUserName);
             federatedUser.setEnabled(true);
-            federatedUser.setEmail(user.get("email"));
+            if (email != null && !email.trim().isEmpty()) {
+                federatedUser.setEmail(email);
+            }
             federatedUser.setFirstName(user.get("firstName"));
             federatedUser.setLastName(user.get("lastName"));
 
@@ -118,7 +121,11 @@ public class CertificateAuthenticator implements Authenticator {
         } else {
             log.warnf("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
-            existingUser.setEmail(user.get("email"));
+            if (email != null && !email.trim().isEmpty()) {
+                existingUser.setEmail(email);
+            } else if (existingUser.getEmail() != null) {
+                existingUser.setEmail(null);
+            }
             existingUser.setFirstName(user.get("firstName"));
             existingUser.setLastName(user.get("lastName"));
 
