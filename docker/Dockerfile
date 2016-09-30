@@ -9,6 +9,9 @@ FROM jboss/keycloak-mysql:latest
 ADD proxy-forward.xslt /opt/jboss/keycloak/
 RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; rm /opt/jboss/keycloak/proxy-forward.xslt
 
+# Add the maritime cloud theme
+ADD themes /opt/jboss/keycloak/themes/
+
 USER root
 RUN mkdir -p /mc-eventprovider-conf
 # Hack to copy the customized keycloak-server.json to keycloak at runtime
@@ -17,10 +20,17 @@ RUN sed -i '2icp /mc-eventprovider-conf/keycloak-server.json /opt/jboss/keycloak
 # Replace OpenJDK with Oracle JDK to get proper certificate support.
 # Once CentOS 7.3 is released this should not be needed anymore.
 RUN yum -y remove java-1.8.0-openjdk && \
-    curl -L --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u91-b14/jdk-8u91-linux-x64.rpm -o jdk-X-linux-x64.rpm && \
+    curl -L --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u102-b14/jdk-8u102-linux-x64.rpm -o jdk-X-linux-x64.rpm && \
     rpm -ivh jdk-X-linux-x64.rpm && \
     rm jdk-X-linux-x64.rpm
 
+ENV JAVA_HOME /usr/java/default
+ENV JAVA /usr/java/default/bin/java
+
+# Install JCE Unlimited Strength
+RUN curl -L --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip -o /tmp/jce_policy-8.zip && \
+    unzip -oj -d ${JAVA_HOME}/jre/lib/security /tmp/jce_policy-8.zip \*/\*.jar && \
+    rm /tmp/jce_policy-8.zip
 
 USER jboss
 RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloudKeycloakSpi/lastSuccessfulBuild/artifact/target/mc-identityregistry-keycloak-spi-latest.jar
@@ -31,5 +41,3 @@ ENV MYSQL_PASSWORD password
 ENV MYSQL_PORT_3306_TCP_ADDR localhost
 ENV MYSQL_PORT_3306_TCP_PORT 3306
 
-ENV JAVA_HOME /usr/java/default
-ENV JAVA /usr/java/default/bin/java
