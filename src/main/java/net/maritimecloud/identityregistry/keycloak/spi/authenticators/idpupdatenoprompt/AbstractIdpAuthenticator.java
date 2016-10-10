@@ -35,7 +35,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 //import org.keycloak.services.messages.Messages;
 
-import net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util.ExistingUserInfo;
 import net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util.SerializedBrokeredIdentityContext;
 
 /**
@@ -119,7 +118,7 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
 
     }
 
-    public static UserModel getExistingUser(KeycloakSession session, RealmModel realm, ClientSessionModel clientSession) {
+    /*public static UserModel getExistingUser(KeycloakSession session, RealmModel realm, ClientSessionModel clientSession) {
         String existingUserId = clientSession.getNote(EXISTING_USER_INFO);
         if (existingUserId == null) {
             throw new AuthenticationFlowException("Unexpected state. There is no existing duplicated user identified in ClientSession",
@@ -138,5 +137,5 @@ public abstract class AbstractIdpAuthenticator implements Authenticator {
         }
 
         return existingUser;
-    }
+    }*/
 }
