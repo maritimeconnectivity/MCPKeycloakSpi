@@ -122,26 +122,7 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
             existingUser.setEmail(brokerContext.getEmail());
             existingUser.setFirstName(brokerContext.getFirstName());
             existingUser.setLastName(brokerContext.getLastName());
-            // Should this be done by IdentityBrokerService, if at all...?
-            // Clear existing attributes
-            /*existingUser.getAttributes().clear();
-            for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
-                existingUser.removeAttribute(attr.getKey());
-            }
-            // Insert new attribute values
-            for (Map.Entry<String, List<String>> attr : serializedCtx.getAttributes().entrySet()) {
-                existingUser.setAttribute(attr.getKey(), attr.getValue());
-            }*/
-            /*
-            Set<IdentityProviderMapperModel> mappers = context.getRealm().getIdentityProviderMappersByAlias(brokerContext.getIdpConfig().getAlias());
-            if (mappers != null) {
-                KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
-                for (IdentityProviderMapperModel mapper : mappers) {
-                    IdentityProviderMapper target = (IdentityProviderMapper)sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
-                    target.updateBrokeredUser(session, context.getRealm(), existingUser, mapper, brokerContext);
-                }
-            }*/
-
+            // Attribute updating is done in IdentityBrokerService
             context.setUser(existingUser);
             context.success();
         }
