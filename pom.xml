@@ -59,10 +59,6 @@
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
-          <!-- This is to exclude the authenticators implementation that is defunct and not used -->
-          <excludes>
-            <exclude>net/maritimecloud/identityregistry/keycloak/spi/authenticators/idpupdatenoprompt/**</exclude>
-          </excludes>
         </configuration>
       </plugin>
     </plugins>
