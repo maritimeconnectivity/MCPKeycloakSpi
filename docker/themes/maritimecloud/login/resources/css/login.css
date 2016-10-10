@@ -94,7 +94,7 @@ div.kc-logo-text span {
 }
 
 #kc-header {
-    color: #fff;
+    color: #19457F;
     overflow: visible;
     padding-left: 80px;
     white-space: nowrap;
@@ -262,7 +262,7 @@ ol#kc-totp-settings li:first-of-type {
 
     .login-pf .container {
         padding-right: 80px;
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: rgba(0, 28, 65, 0.9);
     }
 
     #kc-locale {
