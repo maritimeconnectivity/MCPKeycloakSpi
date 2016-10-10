@@ -14,15 +14,18 @@
  */
 package net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.AuthenticationFlowError;
+import org.keycloak.authentication.AuthenticationFlowException;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 
 import net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.util.SerializedBrokeredIdentityContext;
 
@@ -57,7 +60,7 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
             return;
         }
 
-        String username = getUsername(context, serializedCtx, brokerContext);
+        String username = getUsername(context, brokerContext);
         if (username == null) {
             log.debug(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
             context.getClientSession().setNote(ENFORCE_UPDATE_PROFILE, "true");
@@ -65,23 +68,51 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
             return;
         }
 
+        // If the cert2oidc client is used, the certificate IDP must be used as well
+        String cert2oidcClientName = "cert2oidc";
+        String certificateIdpName = "certificates";
+        String idpName = brokerContext.getIdpConfig().getAlias();
+        String clientName = brokerContext.getClientSession().getClient().getClientId();
+        log.debugf("Coming from client '%s', using IDP '%s'.", clientName, idpName);
+        if (clientName.toLowerCase().equals(cert2oidcClientName) && !idpName.toLowerCase().equals(certificateIdpName)) {
+            throw new AuthenticationFlowException("This client requires a certificate!", AuthenticationFlowError.INVALID_CLIENT_SESSION);
+        }
+
         UserModel existingUser = context.getSession().users().getUserByUsername(username, context.getRealm());
+        deleteDuplicateUserEmail(existingUser, context, brokerContext);
+
+        // TODO: Do some check to ensure that only the certificate IDP + one other IDP is linked to a user.
 
         if (existingUser == null) {
-            log.debugf("No duplication detected. Creating account for user '%s' and linking with identity provider '%s' .",
-                    username, brokerContext.getIdpConfig().getAlias());
+            log.debugf("No duplication detected. Creating account for user '%s' and linking with identity provider '%s'.",
+                    username, idpName);
 
-            UserModel federatedUser = session.users().addUser(realm, username);
-            federatedUser.setEnabled(true);
-            federatedUser.setEmail(brokerContext.getEmail());
-            federatedUser.setFirstName(brokerContext.getFirstName());
-            federatedUser.setLastName(brokerContext.getLastName());
+            UserModel brokeredUser = session.users().addUser(realm, username);
+            brokeredUser.setEnabled(true);
+            brokeredUser.setEmail(brokerContext.getEmail());
+            brokeredUser.setFirstName(brokerContext.getFirstName());
+            brokeredUser.setLastName(brokerContext.getLastName());
 
             for (Map.Entry<String, List<String>> attr : serializedCtx.getAttributes().entrySet()) {
-                federatedUser.setAttribute(attr.getKey(), attr.getValue());
+                brokeredUser.setAttribute(attr.getKey(), attr.getValue());
             }
 
-            context.setUser(federatedUser);
+            // Build the mrn for the user
+            String usernameWithoutPrefix = "";
+            if (username.startsWith(idpName + ".")) {
+                usernameWithoutPrefix = username.substring(idpName.length() + 1);
+            } else {
+                throw new AuthenticationFlowException("Username is in invalid format!", AuthenticationFlowError.INVALID_USER);
+            }
+            String mrn = "";
+            try {
+                mrn = "urn:mrn:mcl:org:" + idpName + ":user:" + URLEncoder.encode(usernameWithoutPrefix, "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                throw new AuthenticationFlowException("Username is in invalid encoding!", AuthenticationFlowError.INVALID_USER);
+            }
+            brokeredUser.setAttribute("mrn", Arrays.asList(mrn));
+            context.setUser(brokeredUser);
             context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             context.success();
         } else {
@@ -91,22 +122,32 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
             existingUser.setEmail(brokerContext.getEmail());
             existingUser.setFirstName(brokerContext.getFirstName());
             existingUser.setLastName(brokerContext.getLastName());
+            // Should this be done by IdentityBrokerService, if at all...?
             // Clear existing attributes
+            /*existingUser.getAttributes().clear();
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
                 existingUser.removeAttribute(attr.getKey());
             }
             // Insert new attribute values
             for (Map.Entry<String, List<String>> attr : serializedCtx.getAttributes().entrySet()) {
                 existingUser.setAttribute(attr.getKey(), attr.getValue());
-            }
+            }*/
+            /*
+            Set<IdentityProviderMapperModel> mappers = context.getRealm().getIdentityProviderMappersByAlias(brokerContext.getIdpConfig().getAlias());
+            if (mappers != null) {
+                KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+                for (IdentityProviderMapperModel mapper : mappers) {
+                    IdentityProviderMapper target = (IdentityProviderMapper)sessionFactory.getProviderFactory(IdentityProviderMapper.class, mapper.getIdentityProviderMapper());
+                    target.updateBrokeredUser(session, context.getRealm(), existingUser, mapper, brokerContext);
+                }
+            }*/
 
             context.setUser(existingUser);
-            //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             context.success();
         }
     }
 
-    protected String getUsername(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx, BrokeredIdentityContext brokerContext) {
+    protected String getUsername(AuthenticationFlowContext context, BrokeredIdentityContext brokerContext) {
         RealmModel realm = context.getRealm();
         return realm.isRegistrationEmailAsUsername() ? brokerContext.getEmail() : brokerContext.getModelUsername();
     }
@@ -115,8 +156,29 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
     protected void actionImpl(AuthenticationFlowContext context, SerializedBrokeredIdentityContext serializedCtx,
             BrokeredIdentityContext brokerContext) {
         // TODO Auto-generated method stub
-        
     }
 
+    private void deleteDuplicateUserEmail(UserModel existingUser, AuthenticationFlowContext context, BrokeredIdentityContext brokerContext) {
+        String email = brokerContext.getEmail();
+        if (email != null && !email.isEmpty()) {
+            UserModel userWithEmail = context.getSession().users().getUserByEmail(email, context.getRealm());
+            if (userWithEmail != null) {
+                // Check if existingUser and the userWithEmail is the same
+                if (existingUser != null && userWithEmail.getId().equals(existingUser.getId())) {
+                    // All is good - continue to merge/link the users
+                    log.debug("existingUser and the userWithEmail is the same - continue to merge/link the users.");
+                    return;
+                } else {
+                    // Found an existing user with the same email - delete it!
+                    log.debug("Found an existing user with the same email - delete it!");
+                    context.getSession().users().removeUser(context.getRealm(), userWithEmail);
+                }
+            } else {
+                log.debug("Did not find any conflicting users.");
+            }
+        } else {
+            log.debug("The user has no email - so no conflict...");
+        }
+    }
 
 }

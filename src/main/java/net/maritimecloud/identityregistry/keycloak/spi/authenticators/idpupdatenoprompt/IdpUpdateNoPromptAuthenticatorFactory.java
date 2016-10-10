@@ -38,17 +38,14 @@ public class IdpUpdateNoPromptAuthenticatorFactory implements AuthenticatorFacto
 
     @Override
     public void init(Config.Scope config) {
-
     }
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
-
     }
 
     @Override
     public void close() {
-
     }
 
     @Override
@@ -63,7 +60,7 @@ public class IdpUpdateNoPromptAuthenticatorFactory implements AuthenticatorFacto
 
     @Override
     public boolean isConfigurable() {
-        return true;
+        return false;
     }
 
     public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
