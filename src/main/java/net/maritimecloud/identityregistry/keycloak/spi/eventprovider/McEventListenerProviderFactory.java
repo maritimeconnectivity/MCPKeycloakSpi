@@ -39,7 +39,10 @@ public class McEventListenerProviderFactory implements EventListenerProviderFact
         keystorePassword = config.get("keystore-password");
         truststorePath = config.get("truststore-path");
         truststorePassword = config.get("truststore-password");
-        idpNotToSync = config.getArray("idp-not-to-sync");
+        String idpNotToSyncStr = config.get("idp-not-to-sync");
+        if (idpNotToSyncStr != null && !idpNotToSyncStr.trim().isEmpty()) {
+            idpNotToSync = idpNotToSyncStr.split(",");
+        }
     }
 
     public void close() {

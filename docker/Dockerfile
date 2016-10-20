@@ -5,7 +5,7 @@
 # A trust and keystore must also be placed in the folder.
 FROM jboss/keycloak-mysql:latest
 
-# Change the standalone.xml to support https-proxy-forwarding
+# Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/
 RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; rm /opt/jboss/keycloak/proxy-forward.xslt
 
@@ -14,13 +14,11 @@ ADD themes /opt/jboss/keycloak/themes/
 
 USER root
 RUN mkdir -p /mc-eventprovider-conf
-# Hack to copy the customized keycloak-server.json to keycloak at runtime
-RUN sed -i '2icp /mc-eventprovider-conf/keycloak-server.json /opt/jboss/keycloak/standalone/configuration/' /opt/jboss/docker-entrypoint.sh
 
 # Replace OpenJDK with Oracle JDK to get proper certificate support.
 # Once CentOS 7.3 is released this should not be needed anymore.
 RUN yum -y remove java-1.8.0-openjdk && \
-    curl -L --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u102-b14/jdk-8u102-linux-x64.rpm -o jdk-X-linux-x64.rpm && \
+    curl -L --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jdk-8u112-linux-x64.rpm -o jdk-X-linux-x64.rpm && \
     rpm -ivh jdk-X-linux-x64.rpm && \
     rm jdk-X-linux-x64.rpm
 

@@ -28,8 +28,6 @@ public class User {
     public User() {
     }
 
-    private String userOrgId;
-
     private String firstName;
 
     private String lastName;
@@ -43,14 +41,6 @@ public class User {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public String getUserOrgId() {
-        return userOrgId;
-    }
-
-    public void setUserOrgId(String userOrgId) {
-        this.userOrgId = userOrgId;
-    }
-
     public String getFirstName() {
         return firstName;
     }

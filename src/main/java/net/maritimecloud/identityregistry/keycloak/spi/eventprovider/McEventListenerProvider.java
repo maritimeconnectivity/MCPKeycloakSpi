@@ -81,7 +81,7 @@ public class McEventListenerProvider implements EventListenerProvider {
 
     public void onEvent(Event event) {
         // We only worry about IDENTITY_PROVIDER_LOGIN events.
-        if (event.getType() != EventType.LOGIN && event.getType() != EventType.IDENTITY_PROVIDER_LOGIN) {
+        if (event.getType() != EventType.IDENTITY_PROVIDER_LOGIN) {
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -127,8 +127,11 @@ public class McEventListenerProvider implements EventListenerProvider {
             return;
         }
 
+        for (String idp : idpNotToSync) {
+            log.info("Skip idp: " + idp);
+        }
         // we skip certain identity providers
-        if (Arrays.binarySearch(idpNotToSync, identityProvider) < 0) {
+        if (Arrays.binarySearch(idpNotToSync, identityProvider) > 0) {
             log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
             return;
         }
@@ -140,26 +143,13 @@ public class McEventListenerProvider implements EventListenerProvider {
             mcUser.setEmail(user.getEmail());
             mcUser.setFirstName(user.getFirstName());
             mcUser.setLastName(user.getLastName());
-            String orgShortName = null;
-            if (event.getType() == EventType.IDENTITY_PROVIDER_LOGIN) {
-                // The username should be in the form "<org-shortname>.<user-unique-org-id>"
-                String[] splitName = user.getUsername().split(".", 1);
-                if (splitName.length == 2) {
-                    orgShortName = splitName[0].toUpperCase();
-                    mcUser.setUserOrgId(splitName[1]);
-                } else {
-                    return;
-                }
-            } else {
-                // TODO: This is for testing only!! Remove again!! 
-                List<String> orgList = user.getAttributes().get("org");
-                if (orgList != null && orgList.size() > 0) {
-                    orgShortName = orgList.get(0);
-                }
-                mcUser.setUserOrgId(user.getUsername());
+            String orgMrn = null;
+            List<String> orgList = user.getAttributes().get("org");
+            if (orgList != null && orgList.size() > 0) {
+                orgMrn = orgList.get(0);
             }
-            if (orgShortName == null || orgShortName.isEmpty()) {
-                log.warn("No org shortname found, skipping user sync");
+            if (orgMrn == null || orgMrn.isEmpty()) {
+                log.warn("No org MRN found, skipping user sync");
                 return;
             }
             List<String> permissionsList = user.getAttributes().get("permissions");
@@ -177,16 +167,16 @@ public class McEventListenerProvider implements EventListenerProvider {
                     log.info("user attr: " + e.getKey() + ", value: "  + String.join(", ", e.getValue()));
                 }
             }
-            sendUserUpdate(mcUser, orgShortName);
+            sendUserUpdate(mcUser, orgMrn);
         }
     }
 
-    private void sendUserUpdate(User user, String orgShortName) {
+    private void sendUserUpdate(User user, String orgMrn) {
         CloseableHttpClient client = buildHttpClient();
         if (client == null) {
             return;
         }
-        HttpPost post = new HttpPost(serverRoot + "/x509/api/org/" + orgShortName + "/user-sync/");
+        HttpPost post = new HttpPost(serverRoot + "/x509/api/org/" + orgMrn + "/user-sync/");
         CloseableHttpResponse response = null;
         try {
             String serializedUser = JsonSerialization.writeValueAsString(user);
