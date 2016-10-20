@@ -80,8 +80,8 @@ public class McEventListenerProvider implements EventListenerProvider {
     }
 
     public void onEvent(Event event) {
-        // We only worry about IDENTITY_PROVIDER_LOGIN events.
-        if (event.getType() != EventType.IDENTITY_PROVIDER_LOGIN) {
+        // We only worry about LOGIN events.
+        if (event.getType() != EventType.LOGIN) {
             return;
         }
         StringBuilder sb = new StringBuilder();
