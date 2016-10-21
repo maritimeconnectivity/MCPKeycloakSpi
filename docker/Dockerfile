@@ -7,7 +7,9 @@ FROM jboss/keycloak-mysql:latest
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/
-RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; rm /opt/jboss/keycloak/proxy-forward.xslt
+RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; \
+	java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; \
+	rm /opt/jboss/keycloak/proxy-forward.xslt
 
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
@@ -39,3 +41,11 @@ ENV MYSQL_PASSWORD password
 ENV MYSQL_PORT_3306_TCP_ADDR localhost
 ENV MYSQL_PORT_3306_TCP_PORT 3306
 
+ENV MC_IDREG_SERVER_ROOT https://localhost
+ENV SYNC_KEYSTORE_PATH /mc-eventprovider-conf/idbroker-updater.jks
+ENV SYNC_KEYSTORE_PASSWORD changeit
+ENV SYNC_TRUSTSTORE_PATH /mc-eventprovider-conf/mc-truststore.jks
+ENV SYNC_TRUSTSTORE_PASSWORD changeit
+ENV NOSYNC_IDPS certificates,projecttestusers
+ENV CERT_TRUSTSTORE_PATH /mc-eventprovider-conf/mc-truststore.jks
+ENV CERT_TRUSTSTORE_PASSWORD changeit

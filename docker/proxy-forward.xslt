@@ -17,26 +17,42 @@
         <do:socket-binding name="proxy-https" port="443"/>
     </xsl:template>
 
-    <xsl:template match="//ks:subsystem">
+    <xsl:template match="//ks:spi[@name='jta-lookup']">
         <xsl:copy-of select="."/>
         <!-- Custom SPIs below -->
         <ks:spi name="eventsListener">
             <ks:provider name="mc-event-listener" enabled="true">
                 <ks:properties>
-                    <ks:property name="server-root" value="${env.MC_IDREG_SERVER_ROOT:https://localhost}"/>
-                    <ks:property name="keystore-path" value="${env.KEYSTORE_PATH:/mc-eventprovider-conf/idbroker-updater.jks}"/>
-                    <ks:property name="keystore-password" value="${env.KEYSTORE_PASSWORD:changeit}"/>
-                    <ks:property name="truststore-path" value="${env.TRUSTSTORE_PATH:/mc-eventprovider-conf/mc-truststore.jks}"/>
-                    <ks:property name="truststore-password" value="${env.TRUSTSTORE_PASSWORD:changeit}"/>
-                    <ks:property name="idp-not-to-sync" value="${env.NOSYNC_IDPS:certificates,projecttestusers}"/>
+                    <ks:property name="server-root">
+                        <xsl:attribute name="value">${env.MC_IDREG_SERVER_ROOT:https://localhost}</xsl:attribute>
+                    </ks:property>
+                    <ks:property name="keystore-path">
+                        <xsl:attribute name="value">${env.SYNC_KEYSTORE_PATH:/mc-eventprovider-conf/idbroker-updater.jks}</xsl:attribute>
+                    </ks:property>
+                    <ks:property name="keystore-password">
+                        <xsl:attribute name="value">${env.SYNC_KEYSTORE_PASSWORD:changeit}</xsl:attribute>
+                    </ks:property>
+                    <ks:property name="truststore-path">
+                        <xsl:attribute name="value">${env.SYNC_TRUSTSTORE_PATH}</xsl:attribute>
+                    </ks:property>
+                    <ks:property name="truststore-password">
+                        <xsl:attribute name="value">${env.SYNC_TRUSTSTORE_PASSWORD}</xsl:attribute>
+                    </ks:property>
+                    <ks:property name="idp-not-to-sync">
+                        <xsl:attribute name="value">${env.NOSYNC_IDPS:certificates,projecttestusers}</xsl:attribute>
+                    </ks:property>
                 </ks:properties>
             </ks:provider>
         </ks:spi>
         <ks:spi name="authenticator">
             <ks:provider name="certificate" enabled="true">
                 <ks:properties>
-                    <ks:property name="truststore-path" value="${env.TRUSTSTORE_PATH:/mc-eventprovider-conf/mc-truststore.jks}"/>
-                    <ks:property name="truststore-password" value="${env.TRUSTSTORE_PATH:changeit}"/>
+                    <ks:property name="truststore-path">
+                        <xsl:attribute name="value">${env.CERT_TRUSTSTORE_PATH:/mc-eventprovider-conf/mc-truststore.jks}</xsl:attribute>
+                    </ks:property>
+                    <ks:property name="truststore-password">
+                        <xsl:attribute name="value">${env.CERT_TRUSTSTORE_PATH:changeit}</xsl:attribute>
+                    </ks:property>
                 </ks:properties>
             </ks:provider>
             <ks:provider name="idp-update-no-promt" enabled="true"/>
