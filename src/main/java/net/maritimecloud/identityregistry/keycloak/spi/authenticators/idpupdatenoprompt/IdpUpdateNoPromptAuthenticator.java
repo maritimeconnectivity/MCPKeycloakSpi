@@ -97,21 +97,8 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
                 brokeredUser.setAttribute(attr.getKey(), attr.getValue());
             }
 
-            // Build the mrn for the user
-            String usernameWithoutPrefix = "";
-            if (username.startsWith(idpName + ".")) {
-                usernameWithoutPrefix = username.substring(idpName.length() + 1);
-            } else {
-                throw new AuthenticationFlowException("Username is in invalid format!", AuthenticationFlowError.INVALID_USER);
-            }
-            String mrn = "";
-            try {
-                mrn = "urn:mrn:mcl:org:" + idpName + ":user:" + URLEncoder.encode(usernameWithoutPrefix, "utf-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                throw new AuthenticationFlowException("Username is in invalid encoding!", AuthenticationFlowError.INVALID_USER);
-            }
-            brokeredUser.setAttribute("mrn", Arrays.asList(mrn));
+            // MRN and username is the same
+            brokeredUser.setAttribute("mrn", Arrays.asList(username));
             context.setUser(brokeredUser);
             context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             context.success();

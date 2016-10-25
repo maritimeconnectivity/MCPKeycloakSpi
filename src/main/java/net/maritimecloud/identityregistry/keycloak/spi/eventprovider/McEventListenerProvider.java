@@ -226,6 +226,8 @@ public class McEventListenerProvider implements EventListenerProvider {
     }
 
     private CloseableHttpClient buildHttpClient() {
+        log.info("keystore path: " + keystorePath);
+        log.info("truststorePath path: " + truststorePath);
         KeyStore keyStore = null;
         KeyStore trustStore = null;
         FileInputStream instreamKeystore = null;
