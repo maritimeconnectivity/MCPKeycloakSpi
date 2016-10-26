@@ -14,9 +14,6 @@
  */
 package net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +59,7 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
 
         String username = getUsername(context, brokerContext);
         if (username == null) {
-            log.debug(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
+            log.warn(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
             context.getClientSession().setNote(ENFORCE_UPDATE_PROFILE, "true");
             context.resetFlow();
             return;
@@ -73,7 +70,7 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
         String certificateIdpName = "certificates";
         String idpName = brokerContext.getIdpConfig().getAlias();
         String clientName = brokerContext.getClientSession().getClient().getClientId();
-        log.debugf("Coming from client '%s', using IDP '%s'.", clientName, idpName);
+        log.warnf("Coming from client '%s', using IDP '%s'.", clientName, idpName);
         if (clientName.toLowerCase().equals(cert2oidcClientName) && !idpName.toLowerCase().equals(certificateIdpName)) {
             throw new AuthenticationFlowException("This client requires a certificate!", AuthenticationFlowError.INVALID_CLIENT_SESSION);
         }
@@ -84,7 +81,7 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
         // TODO: Do some check to ensure that only the certificate IDP + one other IDP is linked to a user.
 
         if (existingUser == null) {
-            log.debugf("No duplication detected. Creating account for user '%s' and linking with identity provider '%s'.",
+            log.warnf("No duplication detected. Creating account for user '%s' and linking with identity provider '%s'.",
                     username, idpName);
 
             UserModel brokeredUser = session.users().addUser(realm, username);
@@ -96,14 +93,11 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
             for (Map.Entry<String, List<String>> attr : serializedCtx.getAttributes().entrySet()) {
                 brokeredUser.setAttribute(attr.getKey(), attr.getValue());
             }
-
-            // MRN and username is the same
-            brokeredUser.setAttribute("mrn", Arrays.asList(username));
             context.setUser(brokeredUser);
             context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             context.success();
         } else {
-            log.debugf("Duplication detected. There is already existing user with %s '%s' .",
+            log.warnf("Duplication detected. There is already existing user with %s '%s' .",
                     UserModel.USERNAME, existingUser.getUsername());
 
             existingUser.setEmail(brokerContext.getEmail());
@@ -134,18 +128,18 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
                 // Check if existingUser and the userWithEmail is the same
                 if (existingUser != null && userWithEmail.getId().equals(existingUser.getId())) {
                     // All is good - continue to merge/link the users
-                    log.debug("existingUser and the userWithEmail is the same - continue to merge/link the users.");
+                    log.warn("existingUser and the userWithEmail is the same - continue to merge/link the users.");
                     return;
                 } else {
                     // Found an existing user with the same email - delete it!
-                    log.debug("Found an existing user with the same email - delete it!");
+                    log.warn("Found an existing user with the same email - delete it!");
                     context.getSession().users().removeUser(context.getRealm(), userWithEmail);
                 }
             } else {
-                log.debug("Did not find any conflicting users.");
+                log.warn("Did not find any conflicting users.");
             }
         } else {
-            log.debug("The user has no email - so no conflict...");
+            log.warn("The user has no email - so no conflict...");
         }
     }
 

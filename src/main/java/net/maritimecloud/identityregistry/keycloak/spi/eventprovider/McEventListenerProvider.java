@@ -143,6 +143,8 @@ public class McEventListenerProvider implements EventListenerProvider {
             mcUser.setEmail(user.getEmail());
             mcUser.setFirstName(user.getFirstName());
             mcUser.setLastName(user.getLastName());
+            // The username is in reality a mrn...
+            mcUser.setMrn(user.getUsername());
             String orgMrn = null;
             List<String> orgList = user.getAttributes().get("org");
             if (orgList != null && orgList.size() > 0) {
@@ -156,12 +158,6 @@ public class McEventListenerProvider implements EventListenerProvider {
             if (permissionsList != null && permissionsList.size() > 0) {
                 mcUser.setPermissions(String.join(", ", permissionsList));
             }
-
-            List<String> mrnList = user.getAttributes().get("mrn");
-            if (mrnList != null && mrnList.size() > 0) {
-                mcUser.setMrn(String.join(", ", mrnList));
-            }
-
             if (user != null && user.getAttributes() != null) {
                 for (Map.Entry<String, List<String>> e: user.getAttributes().entrySet()) {
                     log.info("user attr: " + e.getKey() + ", value: "  + String.join(", ", e.getValue()));

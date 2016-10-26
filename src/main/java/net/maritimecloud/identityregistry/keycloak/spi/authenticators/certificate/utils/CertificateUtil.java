@@ -137,7 +137,7 @@ public class CertificateUtil {
         logger.warn("Parsed certificate, DN: " + certDN);
         String fullname = getElement(x500name, BCStyle.CN);
         user.put("fullname", fullname);
-        String combinedOrg = getElement(x500name, BCStyle.O);
+        String orgMrn = getElement(x500name, BCStyle.O);
         user.put("email", getElement(x500name, BCStyle.EmailAddress));
         // Extract first and last name from full name
         String lastName = "";
@@ -150,16 +150,9 @@ public class CertificateUtil {
         }
         user.put("lastName", lastName);
         user.put("firstName", firstName);
-        String[] orgNames = combinedOrg.split(";");
-        String orgShortName = orgNames[0].toLowerCase();
-        user.put("orgShortName", orgShortName);
-        user.put("orgFullName", orgNames[1]);
-        // prefix orgUserName with org shortname if not already done
-        String orgUserName = getElement(x500name, BCStyle.UID).toLowerCase();
-        if (!orgUserName.startsWith(orgShortName + ".")) {
-            orgUserName = orgShortName.toLowerCase() + "." + orgUserName;
-        }
-        user.put("orgUserName", orgUserName);
+        user.put("orgMrn", orgMrn);
+        String mrn = getElement(x500name, BCStyle.UID).toLowerCase();
+        user.put("mrn", mrn);
         user.put("type", getElement(x500name, BCStyle.OU));
         // Extract info from Subject Alternative Name extension
         Collection<List<?>> san = null;

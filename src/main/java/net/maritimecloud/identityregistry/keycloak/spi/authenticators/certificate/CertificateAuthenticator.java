@@ -71,27 +71,24 @@ public class CertificateAuthenticator implements Authenticator {
         }
 
         // Check for required data
+        String mrn = user.get("mrn");
         String fullname = user.get("fullname");
-        String orgUserName = user.get("orgUserName");
-        String org = user.get("orgShortName");
+        String orgMrn = user.get("orgMrn");
         String email = user.get("email");
-        if (fullname == null || fullname.isEmpty() || orgUserName == null || orgUserName.isEmpty() || org == null || org.isEmpty()) {
+        if (fullname == null || fullname.isEmpty() || mrn == null || mrn.isEmpty() || orgMrn == null || orgMrn.isEmpty()) {
             log.warn("Required data is not available in client certificate!");
             throw new AuthenticationFlowException("Required data is not available in client certificate!", AuthenticationFlowError.INVALID_USER);
         }
         KeycloakSession session = authenticationFlowContext.getSession();
         RealmModel realm = authenticationFlowContext.getRealm();
-
         String permissions = user.get("permissions");
-        String mrn = user.get("mrn");
-        String orgShortName = user.get("orgShortName");
 
         // Try to find existing user
-        UserModel existingUser = session.users().getUserByUsername(orgUserName, authenticationFlowContext.getRealm());
+        UserModel existingUser = session.users().getUserByUsername(mrn, authenticationFlowContext.getRealm());
         if (existingUser == null) {
-            log.warnf("No duplication detected. Creating account for user '%s'.", orgUserName);
+            log.warnf("No duplication detected. Creating account for user '%s'.", mrn);
 
-            UserModel federatedUser = session.users().addUser(realm, orgUserName);
+            UserModel federatedUser = session.users().addUser(realm, mrn);
             federatedUser.setEnabled(true);
             if (email != null && !email.trim().isEmpty()) {
                 federatedUser.setEmail(email);
@@ -109,10 +106,10 @@ public class CertificateAuthenticator implements Authenticator {
                 federatedUser.setAttribute("mrn", Arrays.asList(mrn));
                 log.warn("Just set mrn attr to: " + mrn);
             }
-            log.warn("About to set org attr to: " + orgShortName);
-            if (orgShortName != null && !orgShortName.trim().isEmpty()) {
-                federatedUser.setAttribute("org", Arrays.asList(orgShortName));
-                log.warn("Just set org attr to: " + orgShortName);
+            log.warn("About to set org attr to: " + orgMrn);
+            if (orgMrn != null && !orgMrn.trim().isEmpty()) {
+                federatedUser.setAttribute("org", Arrays.asList(orgMrn));
+                log.warn("Just set org attr to: " + orgMrn);
             }
 
             authenticationFlowContext.setUser(federatedUser);
@@ -143,10 +140,10 @@ public class CertificateAuthenticator implements Authenticator {
                 existingUser.setAttribute("mrn", Arrays.asList(mrn));
                 log.warn("Just set mrn attr to: " + mrn);
             }
-            log.warn("About to set org attr to: " + orgShortName);
-            if (orgShortName != null && !orgShortName.trim().isEmpty()) {
-                existingUser.setAttribute("org", Arrays.asList(orgShortName));
-                log.warn("Just set org attr to: " + orgShortName);
+            log.warn("About to set org attr to: " + orgMrn);
+            if (orgMrn != null && !orgMrn.trim().isEmpty()) {
+                existingUser.setAttribute("org", Arrays.asList(orgMrn));
+                log.warn("Just set org attr to: " + orgMrn);
             }
 
             authenticationFlowContext.setUser(existingUser);
