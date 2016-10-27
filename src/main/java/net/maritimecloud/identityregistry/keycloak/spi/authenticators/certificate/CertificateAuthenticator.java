@@ -86,7 +86,7 @@ public class CertificateAuthenticator implements Authenticator {
         // Try to find existing user
         UserModel existingUser = session.users().getUserByUsername(mrn, authenticationFlowContext.getRealm());
         if (existingUser == null) {
-            log.warnf("No duplication detected. Creating account for user '%s'.", mrn);
+            log.infof("No duplication detected. Creating account for user '%s'.", mrn);
 
             UserModel federatedUser = session.users().addUser(realm, mrn);
             federatedUser.setEnabled(true);
@@ -96,27 +96,27 @@ public class CertificateAuthenticator implements Authenticator {
             federatedUser.setFirstName(user.get("firstName"));
             federatedUser.setLastName(user.get("lastName"));
 
-            log.warn("About to set permissions attr to: " + user.get("permissions"));
+            log.info("About to set permissions attr to: " + user.get("permissions"));
             if (permissions != null && !permissions.trim().isEmpty()) {
                 federatedUser.setAttribute("permissions", Arrays.asList(permissions));
-                log.warn("Just set permissions attr to: " + permissions);
+                log.info("Just set permissions attr to: " + permissions);
             }
-            log.warn("About to set mrn attr to: " + mrn);
+            log.info("About to set mrn attr to: " + mrn);
             if (mrn != null && !mrn.trim().isEmpty()) {
                 federatedUser.setAttribute("mrn", Arrays.asList(mrn));
-                log.warn("Just set mrn attr to: " + mrn);
+                log.info("Just set mrn attr to: " + mrn);
             }
-            log.warn("About to set org attr to: " + orgMrn);
+            log.info("About to set org attr to: " + orgMrn);
             if (orgMrn != null && !orgMrn.trim().isEmpty()) {
                 federatedUser.setAttribute("org", Arrays.asList(orgMrn));
-                log.warn("Just set org attr to: " + orgMrn);
+                log.info("Just set org attr to: " + orgMrn);
             }
 
             authenticationFlowContext.setUser(federatedUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             authenticationFlowContext.success();
         } else {
-            log.warnf("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
+            log.infof("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
             if (email != null && !email.trim().isEmpty()) {
                 existingUser.setEmail(email);
@@ -130,27 +130,27 @@ public class CertificateAuthenticator implements Authenticator {
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
                 existingUser.removeAttribute(attr.getKey());
             }
-            log.warn("About to set permissions attr to: " + permissions);
+            log.info("About to set permissions attr to: " + permissions);
             if (permissions != null && !permissions.trim().isEmpty()) {
                 existingUser.setAttribute("permissions", Arrays.asList(permissions));
-                log.warn("Just set permissions attr to: " + permissions);
+                log.info("Just set permissions attr to: " + permissions);
             }
-            log.warn("About to set mrn attr to: " + mrn);
+            log.info("About to set mrn attr to: " + mrn);
             if (mrn != null && !mrn.trim().isEmpty()) {
                 existingUser.setAttribute("mrn", Arrays.asList(mrn));
-                log.warn("Just set mrn attr to: " + mrn);
+                log.info("Just set mrn attr to: " + mrn);
             }
-            log.warn("About to set org attr to: " + orgMrn);
+            log.info("About to set org attr to: " + orgMrn);
             if (orgMrn != null && !orgMrn.trim().isEmpty()) {
                 existingUser.setAttribute("org", Arrays.asList(orgMrn));
-                log.warn("Just set org attr to: " + orgMrn);
+                log.info("Just set org attr to: " + orgMrn);
             }
 
             authenticationFlowContext.setUser(existingUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
             authenticationFlowContext.success();
         }
-        log.warn("Authentication flow succesfully completed!");
+        log.info("Authentication flow succesfully completed!");
     }
 
     @Override

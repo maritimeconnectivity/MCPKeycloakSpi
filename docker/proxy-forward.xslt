@@ -51,7 +51,7 @@
                         <xsl:attribute name="value">${env.CERT_TRUSTSTORE_PATH:/mc-eventprovider-conf/mc-truststore.jks}</xsl:attribute>
                     </ks:property>
                     <ks:property name="truststore-password">
-                        <xsl:attribute name="value">${env.CERT_TRUSTSTORE_PATH:changeit}</xsl:attribute>
+                        <xsl:attribute name="value">${env.CERT_TRUSTSTORE_PASSWORD:changeit}</xsl:attribute>
                     </ks:property>
                 </ks:properties>
             </ks:provider>
