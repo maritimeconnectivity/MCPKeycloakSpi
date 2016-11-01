@@ -303,7 +303,7 @@ public class SerializedBrokeredIdentityContext implements UpdateProfileContext {
                 throw new IdentityBrokerException("Could not find factory for identity provider [" + alias + "].");
             }
 
-            return providerFactory.create(identityProviderModel);
+            return providerFactory.create(session, identityProviderModel);
         }
 
         throw new IdentityBrokerException("Identity Provider [" + alias + "] not found.");
