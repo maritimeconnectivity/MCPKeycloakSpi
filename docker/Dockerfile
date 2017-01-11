@@ -3,7 +3,7 @@
 # 
 # A custom keycloak-server.json conf file must be available in the folder mounted to /mc-eventprovider-conf.
 # A trust and keystore must also be placed in the folder.
-FROM jboss/keycloak-mysql:2.4.0.Final
+FROM jboss/keycloak-mysql:2.5.0.Final
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/

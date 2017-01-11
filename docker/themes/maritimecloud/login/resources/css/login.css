@@ -118,6 +118,7 @@ div.kc-logo-text span {
 #kc-info {
     padding-bottom: 200px;
     margin-bottom: -200px;
+    border-left: none;
 }
 
 #kc-info-wrapper {
@@ -152,6 +153,10 @@ ol#kc-totp-settings li:first-of-type {
 }
 
 /* OAuth */
+
+#kc-form {
+    display: none;
+}
 
 #kc-oauth h3 {
     margin-top: 0;

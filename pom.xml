@@ -21,17 +21,17 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi</artifactId>
-      <version>2.4.0.Final</version>
+      <version>2.5.0.Final</version>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
-      <version>2.4.0.Final</version>
+      <version>2.5.0.Final</version>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi-private</artifactId>
-      <version>2.4.0.Final</version>
+      <version>2.5.0.Final</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
