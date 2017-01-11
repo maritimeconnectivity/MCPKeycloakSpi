@@ -142,7 +142,7 @@ public class CertificateUtil {
         // Extract first and last name from full name
         String lastName = "";
         String firstName = "";
-        if (fullname.split("\\w+").length > 1) {
+        if (fullname.split("\\w +\\w").length > 1) {
             lastName = fullname.substring(fullname.lastIndexOf(" ")+1);
             firstName = fullname.substring(0, fullname.lastIndexOf(' '));
         } else {

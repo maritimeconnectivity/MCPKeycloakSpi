@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.keycloak.spi.eventprovider;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -26,6 +27,7 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.net.URLEncoder;
 
 import javax.net.ssl.SSLContext;
 
@@ -158,21 +160,42 @@ public class McEventListenerProvider implements EventListenerProvider {
             if (permissionsList != null && permissionsList.size() > 0) {
                 mcUser.setPermissions(String.join(", ", permissionsList));
             }
+            // in case the user comes from an Identity Provider that hosts multiple organizations, the organization is
+            // not always known, so some extra info is/can be given, which is then used for sync
+            List<String> orgNameList = user.getAttributes().get("org-name");
+            String orgName = null;
+            if (orgNameList != null && orgNameList.size() > 0) {
+                orgName = orgNameList.get(0);
+            }
+            List<String> orgAddressList = user.getAttributes().get("org-address");
+            String orgAddress = null;
+            if (orgAddressList != null && orgAddressList.size() > 0) {
+                orgAddress = orgNameList.get(0);
+            }
             if (user != null && user.getAttributes() != null) {
                 for (Map.Entry<String, List<String>> e: user.getAttributes().entrySet()) {
                     log.info("user attr: " + e.getKey() + ", value: "  + String.join(", ", e.getValue()));
                 }
             }
-            sendUserUpdate(mcUser, orgMrn);
+            sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
         }
     }
 
-    private void sendUserUpdate(User user, String orgMrn) {
+    private void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress) {
         CloseableHttpClient client = buildHttpClient();
         if (client == null) {
             return;
         }
-        HttpPost post = new HttpPost(serverRoot + "/x509/api/org/" + orgMrn + "/user-sync/");
+        String uri = serverRoot + "/x509/api/org/" + orgMrn + "/user-sync/";
+        if (orgName != null && orgAddress != null) {
+            try {
+                uri += "?org-name=" + URLEncoder.encode(orgName, "UTF-8") + "&org-address=" + URLEncoder.encode(orgAddress, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.error("Threw exception", e);
+                return;
+            }
+        }
+        HttpPost post = new HttpPost(uri);
         CloseableHttpResponse response = null;
         try {
             String serializedUser = JsonSerialization.writeValueAsString(user);
