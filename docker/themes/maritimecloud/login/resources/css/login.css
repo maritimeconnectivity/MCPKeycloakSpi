@@ -314,6 +314,7 @@ ol#kc-totp-settings li:first-of-type {
     .login-pf .container {
         padding-top: 15px;
         padding-bottom: 15px;
+        background-color: rgba(0, 28, 65, 0.9);
     }
 
     #kc-locale {
