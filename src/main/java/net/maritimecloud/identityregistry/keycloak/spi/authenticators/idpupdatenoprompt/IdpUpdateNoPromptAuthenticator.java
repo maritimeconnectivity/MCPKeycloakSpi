@@ -125,16 +125,9 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
         if (email != null && !email.isEmpty()) {
             UserModel userWithEmail = context.getSession().users().getUserByEmail(email, context.getRealm());
             if (userWithEmail != null) {
-                // Check if existingUser and the userWithEmail is the same
-                if (existingUser != null && userWithEmail.getId().equals(existingUser.getId())) {
-                    // All is good - continue to merge/link the users
-                    log.warn("existingUser and the userWithEmail is the same - continue to merge/link the users.");
-                    return;
-                } else {
-                    // Found an existing user with the same email - delete it!
-                    log.warn("Found an existing user with the same email - delete it!");
-                    context.getSession().users().removeUser(context.getRealm(), userWithEmail);
-                }
+                // Found an existing user with the same email - delete it!
+                log.warn("Found an existing user with the same email - delete it!");
+                context.getSession().users().removeUser(context.getRealm(), userWithEmail);
             } else {
                 log.warn("Did not find any conflicting users.");
             }
