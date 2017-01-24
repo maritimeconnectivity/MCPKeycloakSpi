@@ -133,7 +133,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             log.info("Skip idp: " + idp);
         }
         // we skip certain identity providers
-        if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) > 0) {
+        if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
             log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
             return;
         }
