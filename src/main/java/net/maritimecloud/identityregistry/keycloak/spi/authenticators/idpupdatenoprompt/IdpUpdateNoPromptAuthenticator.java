@@ -59,7 +59,7 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
 
         String username = getUsername(context, brokerContext);
         if (username == null) {
-            log.warn(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
+            log.info(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
             context.getClientSession().setNote(ENFORCE_UPDATE_PROFILE, "true");
             context.resetFlow();
             return;
@@ -70,43 +70,27 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
         String certificateIdpName = "certificates";
         String idpName = brokerContext.getIdpConfig().getAlias();
         String clientName = brokerContext.getClientSession().getClient().getClientId();
-        log.warnf("Coming from client '%s', using IDP '%s'.", clientName, idpName);
+        log.infof("Coming from client '%s', using IDP '%s'.", clientName, idpName);
         if (clientName.toLowerCase().equals(cert2oidcClientName) && !idpName.toLowerCase().equals(certificateIdpName)) {
             throw new AuthenticationFlowException("This client requires a certificate!", AuthenticationFlowError.INVALID_CLIENT_SESSION);
         }
+        // Delete any duplicate user that shares email or username with the user logging in.
+        deleteDuplicateUser(username, context, brokerContext);
 
-        UserModel existingUser = context.getSession().users().getUserByUsername(username, context.getRealm());
-        deleteDuplicateUserEmail(existingUser, context, brokerContext);
-
-        // TODO: Do some check to ensure that only the certificate IDP + one other IDP is linked to a user.
-
-        if (existingUser == null) {
-            log.warnf("No duplication detected. Creating account for user '%s' and linking with identity provider '%s'.",
-                    username, idpName);
-
-            UserModel brokeredUser = session.users().addUser(realm, username);
-            brokeredUser.setEnabled(true);
-            brokeredUser.setEmail(brokerContext.getEmail());
-            brokeredUser.setFirstName(brokerContext.getFirstName());
-            brokeredUser.setLastName(brokerContext.getLastName());
-
-            for (Map.Entry<String, List<String>> attr : serializedCtx.getAttributes().entrySet()) {
-                brokeredUser.setAttribute(attr.getKey(), attr.getValue());
-            }
-            context.setUser(brokeredUser);
-            context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
-            context.success();
-        } else {
-            log.warnf("Duplication detected. There is already existing user with %s '%s' .",
-                    UserModel.USERNAME, existingUser.getUsername());
-
-            existingUser.setEmail(brokerContext.getEmail());
-            existingUser.setFirstName(brokerContext.getFirstName());
-            existingUser.setLastName(brokerContext.getLastName());
-            // Attribute updating is done in IdentityBrokerService
-            context.setUser(existingUser);
-            context.success();
+        log.infof("Creating account for user '%s' and linking with identity provider '%s'.", username, idpName);
+        UserModel brokeredUser = session.users().addUser(realm, username);
+        brokeredUser.setEnabled(true);
+        brokeredUser.setEmail(brokerContext.getEmail());
+        brokeredUser.setFirstName(brokerContext.getFirstName());
+        brokeredUser.setLastName(brokerContext.getLastName());
+        // Copy attributes
+        for (Map.Entry<String, List<String>> attr : serializedCtx.getAttributes().entrySet()) {
+            brokeredUser.setAttribute(attr.getKey(), attr.getValue());
         }
+        context.setUser(brokeredUser);
+        context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
+        context.success();
+
     }
 
     protected String getUsername(AuthenticationFlowContext context, BrokeredIdentityContext brokerContext) {
@@ -120,19 +104,25 @@ public class IdpUpdateNoPromptAuthenticator extends AbstractIdpAuthenticator {
         // TODO Auto-generated method stub
     }
 
-    private void deleteDuplicateUserEmail(UserModel existingUser, AuthenticationFlowContext context, BrokeredIdentityContext brokerContext) {
+    private void deleteDuplicateUser(String username, AuthenticationFlowContext context, BrokeredIdentityContext brokerContext) {
         String email = brokerContext.getEmail();
         if (email != null && !email.isEmpty()) {
             UserModel userWithEmail = context.getSession().users().getUserByEmail(email, context.getRealm());
             if (userWithEmail != null) {
                 // Found an existing user with the same email - delete it!
-                log.warn("Found an existing user with the same email - delete it!");
+                log.info("Found an existing user with the same email - delete it!");
                 context.getSession().users().removeUser(context.getRealm(), userWithEmail);
             } else {
-                log.warn("Did not find any conflicting users.");
+                log.info("Did not find any conflicting users.");
             }
         } else {
-            log.warn("The user has no email - so no conflict...");
+            log.info("The user has no email - so no conflict...");
+        }
+        UserModel existingUser = context.getSession().users().getUserByUsername(username, context.getRealm());
+        if (existingUser != null) {
+            // Found an existing user with the same username - delete it!
+            log.info("Found an existing user with the same username - delete it!");
+            context.getSession().users().removeUser(context.getRealm(), existingUser);
         }
     }
 
