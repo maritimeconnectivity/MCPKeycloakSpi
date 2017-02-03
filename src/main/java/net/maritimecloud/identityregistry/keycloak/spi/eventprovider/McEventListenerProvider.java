@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.net.URLEncoder;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.SSLContext;
 
@@ -57,6 +58,8 @@ import org.jboss.logging.Logger;
 public class McEventListenerProvider implements EventListenerProvider {
 
     private static final Logger log = Logger.getLogger(McEventListenerProvider.class);
+
+    public final static Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
     private KeycloakSession session;
     private String serverRoot = "";
@@ -171,6 +174,15 @@ public class McEventListenerProvider implements EventListenerProvider {
             String orgAddress = null;
             if (orgAddressList != null && orgAddressList.size() > 0) {
                 orgAddress = orgNameList.get(0);
+            }
+            // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
+            // in the orgName. Also puts a dummy value in the orgAddress if needed.
+            if (orgName != null && MRN_PATTERN.matcher(orgName).matches()) {
+                int idx = orgMrn.lastIndexOf(":") + 1;
+                orgName = orgMrn.substring(idx);
+                if (orgAddress != null || orgAddress.isEmpty()) {
+                    orgAddress = "A round the corner, The Seven Seas";
+                }
             }
             if (user != null && user.getAttributes() != null) {
                 for (Map.Entry<String, List<String>> e: user.getAttributes().entrySet()) {
