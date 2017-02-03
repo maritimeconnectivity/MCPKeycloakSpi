@@ -180,7 +180,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             if (orgName != null && MRN_PATTERN.matcher(orgName).matches()) {
                 int idx = orgMrn.lastIndexOf(":") + 1;
                 orgName = orgMrn.substring(idx);
-                if (orgAddress != null || orgAddress.isEmpty()) {
+                if (orgAddress == null || orgAddress.isEmpty()) {
                     orgAddress = "A round the corner, The Seven Seas";
                 }
             }
@@ -215,6 +215,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             input.setContentType("application/json");
             post.setEntity(input);
             log.info("user json: " + serializedUser);
+            log.info("uri: " + uri);
             response = client.execute(post);
             int status = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
