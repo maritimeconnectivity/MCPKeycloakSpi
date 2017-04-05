@@ -59,10 +59,10 @@ public class CertificateAuthenticator implements Authenticator {
             throw new AuthenticationFlowException("Could not read client certificate!", AuthenticationFlowError.INVALID_USER);
         }
         // Actually authenticate certificate against root cert.
-        if (!certUtil.verifyCertificate(userCertificate)) {
+        /*if (!certUtil.verifyCertificate(userCertificate)) {
             log.warn("Could not validate client certificate!");
             throw new AuthenticationFlowException("Could not validate client certificate!", AuthenticationFlowError.INVALID_USER);
-        }
+        }*/
         // Get user details from the certificate
         Map<String, String> user = certUtil.getUserFromCert(userCertificate);
         if (user == null || user.isEmpty()) {

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.maritimecloud.identityregistry.keycloak.spi</groupId>
   <artifactId>mc-identityregistry-keycloak-spi</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.4.90-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>mc-identityregistry-keycloak-spi</name>
   <url>http://maven.apache.org</url>
@@ -21,17 +21,17 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi</artifactId>
-      <version>2.5.4.Final</version>
+      <version>2.5.5.Final</version>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
-      <version>2.5.4.Final</version>
+      <version>2.5.5.Final</version>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi-private</artifactId>
-      <version>2.5.4.Final</version>
+      <version>2.5.5.Final</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -41,7 +41,7 @@
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging</artifactId>
-      <version>3.3.0.Final</version>
+      <version>3.3.1.Final</version>
     </dependency>
     <dependency>
       <groupId>javax.ws.rs</groupId>
@@ -51,7 +51,7 @@
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-jaxrs</artifactId>
-      <version>3.1.0.Final</version>
+      <version>3.1.1.Final</version>
     </dependency>
   </dependencies>
 

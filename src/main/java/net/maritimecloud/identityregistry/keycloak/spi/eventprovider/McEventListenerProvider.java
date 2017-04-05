@@ -173,7 +173,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             List<String> orgAddressList = user.getAttributes().get("org-address");
             String orgAddress = null;
             if (orgAddressList != null && orgAddressList.size() > 0) {
-                orgAddress = orgNameList.get(0);
+                orgAddress = orgAddressList.get(0);
             }
             // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
             // in the orgName. Also puts a dummy value in the orgAddress if needed.
