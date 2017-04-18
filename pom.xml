@@ -9,6 +9,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <keycloak.version>3.0.0.Final</keycloak.version>
   </properties>
 
   <dependencies>
@@ -21,17 +22,17 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi</artifactId>
-      <version>2.5.5.Final</version>
+      <version>${keycloak.version}</version>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
-      <version>2.5.5.Final</version>
+      <version>${keycloak.version}</version>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi-private</artifactId>
-      <version>2.5.5.Final</version>
+      <version>${keycloak.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
