@@ -4,8 +4,7 @@
     <artifactId>mc-root-pom</artifactId>
     <version>8</version>
   </parent>
-  
-  
+
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.maritimecloud.identityregistry.keycloak.spi</groupId>
   <artifactId>mc-identityregistry-keycloak-spi</artifactId>
@@ -20,12 +19,6 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi</artifactId>
@@ -71,6 +64,30 @@
       <artifactId>lombok</artifactId>
       <version>1.16.16</version>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-engine</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -101,6 +118,22 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.19.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-surefire-provider</artifactId>
+            <version>RELEASE</version>
+          </dependency>
+          <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>RELEASE</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

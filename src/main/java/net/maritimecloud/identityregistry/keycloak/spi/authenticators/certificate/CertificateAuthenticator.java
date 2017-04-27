@@ -1,4 +1,4 @@
-/* Copyright 2016 Danish Maritime Authority.
+/* Copyright 2017 Danish Maritime Authority.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class CertificateAuthenticator implements Authenticator {
         String permissions = user.getPermissions();
 
         // Try to find existing user
-        UserModel existingUser = session.users().getUserByUsername(mrn, authenticationFlowContext.getRealm());
+        UserModel existingUser = session.users().getUserByUsername(mrn, realm);
         if (existingUser == null) {
             log.infof("No duplication detected. Creating account for user '%s'.", mrn);
 
