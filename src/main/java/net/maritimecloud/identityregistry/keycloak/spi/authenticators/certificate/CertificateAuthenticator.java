@@ -14,7 +14,8 @@
  */
 package net.maritimecloud.identityregistry.keycloak.spi.authenticators.certificate;
 
-import net.maritimecloud.identityregistry.keycloak.spi.authenticators.certificate.utils.CertificateUtil;
+import net.maritimecloud.pki.CertificateHandler;
+import net.maritimecloud.pki.PKIIdentity;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -32,16 +33,17 @@ import java.util.Map;
 
 public class CertificateAuthenticator implements Authenticator {
 
-    private String truststorePath = "";
-    private String truststorePassword = "";
-
     private static final Logger log = Logger.getLogger(CertificateAuthenticator.class);
 
-    public CertificateAuthenticator(String truststorePath, String truststorePassword) {
-        this.truststorePath = truststorePath;
-        this.truststorePassword = truststorePassword;
+    public CertificateAuthenticator() {
     }
 
+    /**
+     * Converts the certificate in the header to a Keycloak User.
+     * It is assumed that the certificate is verified by the reserve proxy (nginx) infront of keycloak.
+     *
+     * @param authenticationFlowContext The context...
+     */
     @Override
     public void authenticate(AuthenticationFlowContext authenticationFlowContext) {
         // Get the client certificate from the HTTP header
@@ -52,36 +54,31 @@ public class CertificateAuthenticator implements Authenticator {
             throw new AuthenticationFlowException("No client certificate detected!", AuthenticationFlowError.INVALID_USER);
         }
         // Convert the header string to a certificate
-        CertificateUtil certUtil = new CertificateUtil(this.truststorePath, this.truststorePassword);
-        X509Certificate userCertificate = certUtil.getCertFromString(certStrList.get(0));
+        X509Certificate userCertificate = CertificateHandler.getCertFromNginxHeader(certStrList.get(0));
         if (userCertificate == null) {
             log.warn("Could not read client certificate!");
             throw new AuthenticationFlowException("Could not read client certificate!", AuthenticationFlowError.INVALID_USER);
         }
-        // Actually authenticate certificate against root cert.
-        /*if (!certUtil.verifyCertificate(userCertificate)) {
-            log.warn("Could not validate client certificate!");
-            throw new AuthenticationFlowException("Could not validate client certificate!", AuthenticationFlowError.INVALID_USER);
-        }*/
+
         // Get user details from the certificate
-        Map<String, String> user = certUtil.getUserFromCert(userCertificate);
-        if (user == null || user.isEmpty()) {
+        PKIIdentity user = CertificateHandler.getIdentityFromCert(userCertificate);
+        if (user == null) {
             log.warn("Extraction of data from the certificate failed!");
             throw new AuthenticationFlowException("Extraction of data from the certificate failed!", AuthenticationFlowError.INVALID_USER);
         }
 
         // Check for required data
-        String mrn = user.get("mrn");
-        String fullname = user.get("fullname");
-        String orgMrn = user.get("orgMrn");
-        String email = user.get("email");
+        String mrn = user.getMrn();
+        String fullname = user.getCn();
+        String orgMrn = user.getO();
+        String email = user.getEmail();
         if (fullname == null || fullname.isEmpty() || mrn == null || mrn.isEmpty() || orgMrn == null || orgMrn.isEmpty()) {
             log.warn("Required data is not available in client certificate!");
             throw new AuthenticationFlowException("Required data is not available in client certificate!", AuthenticationFlowError.INVALID_USER);
         }
         KeycloakSession session = authenticationFlowContext.getSession();
         RealmModel realm = authenticationFlowContext.getRealm();
-        String permissions = user.get("permissions");
+        String permissions = user.getPermissions();
 
         // Try to find existing user
         UserModel existingUser = session.users().getUserByUsername(mrn, authenticationFlowContext.getRealm());
@@ -93,10 +90,10 @@ public class CertificateAuthenticator implements Authenticator {
             if (email != null && !email.trim().isEmpty()) {
                 federatedUser.setEmail(email);
             }
-            federatedUser.setFirstName(user.get("firstName"));
-            federatedUser.setLastName(user.get("lastName"));
+            federatedUser.setFirstName(user.getFirstName());
+            federatedUser.setLastName(user.getLastName());
 
-            log.info("About to set permissions attr to: " + user.get("permissions"));
+            log.info("About to set permissions attr to: " + user.getPermissions());
             if (permissions != null && !permissions.trim().isEmpty()) {
                 federatedUser.setAttribute("permissions", Arrays.asList(permissions));
                 log.info("Just set permissions attr to: " + permissions);
@@ -123,8 +120,8 @@ public class CertificateAuthenticator implements Authenticator {
             } else if (existingUser.getEmail() != null) {
                 existingUser.setEmail(null);
             }
-            existingUser.setFirstName(user.get("firstName"));
-            existingUser.setLastName(user.get("lastName"));
+            existingUser.setFirstName(user.getFirstName());
+            existingUser.setLastName(user.getLastName());
 
             // Clear existing attributes
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {

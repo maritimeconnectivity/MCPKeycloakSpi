@@ -18,7 +18,7 @@ USER root
 RUN mkdir -p /mc-eventprovider-conf
 
 USER jboss
-RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloudKeycloakSpi/lastSuccessfulBuild/artifact/target/mc-identityregistry-keycloak-spi-latest.jar
+RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloudKeycloakSpi/lastSuccessfulBuild/artifact/target/mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar
 
 ENV MYSQL_DATABASE keycloak
 ENV MYSQL_USERNAME keycloak

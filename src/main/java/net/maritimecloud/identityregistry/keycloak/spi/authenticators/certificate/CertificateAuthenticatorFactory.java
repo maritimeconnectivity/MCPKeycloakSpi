@@ -40,9 +40,7 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
     @Override
     public void init(Config.Scope config) {
         if (SINGLETON == null) {
-            String truststorePath = config.get("truststore-path");
-            String truststorePassword = config.get("truststore-password");
-            SINGLETON = new CertificateAuthenticator(truststorePath, truststorePassword);
+            SINGLETON = new CertificateAuthenticator();
         }
     }
 
