@@ -89,41 +89,31 @@ public class McEventListenerProvider implements EventListenerProvider {
         if (event.getType() != EventType.LOGIN) {
             return;
         }
+
         StringBuilder sb = new StringBuilder();
-
-        sb.append("type=");
-        sb.append(event.getType());
-        sb.append(", realmId=");
-        sb.append(event.getRealmId());
-        sb.append(", clientId=");
-        sb.append(event.getClientId());
-        sb.append(", userId=");
-        sb.append(event.getUserId());
-        sb.append(", ipAddress=");
-        sb.append(event.getIpAddress());
-
+        sb.append("type=").append(event.getType()).append(", realmId=").append(event.getRealmId()).append(", clientId=").append(event.getClientId())
+                .append(", userId=").append(event.getUserId()).append(", ipAddress=").append(event.getIpAddress());
         if (event.getError() != null) {
-            sb.append(", error=");
-            sb.append(event.getError());
+            sb.append(", error=").append(event.getError());
         }
+
         String identityProvider = null;
         if (event.getDetails() != null) {
             for (Map.Entry<String, String> e : event.getDetails().entrySet()) {
                 if ("identity_provider".equals(e.getKey())) {
                     identityProvider = e.getValue();
                 }
-                sb.append(", ");
-                sb.append(e.getKey());
-                if (e.getValue() == null || e.getValue().indexOf(' ') == -1) {
-                    sb.append("=");
-                    sb.append(e.getValue());
-                } else {
-                    sb.append("='");
-                    sb.append(e.getValue());
-                    sb.append("'");
+                if (log.isInfoEnabled()) {
+                    sb.append(", ").append(e.getKey());
+                    if (e.getValue() == null || e.getValue().indexOf(' ') == -1) {
+                        sb.append("=").append(e.getValue());
+                    } else {
+                        sb.append("='").append(e.getValue()).append("'");
+                    }
                 }
             }
         }
+
         log.info("event info: " + sb.toString());
 
         // Only users coming from an identity provider is sync'ed.
@@ -132,9 +122,6 @@ public class McEventListenerProvider implements EventListenerProvider {
             return;
         }
 
-        for (String idp : idpNotToSync) {
-            log.info("Skip idp: " + idp);
-        }
         // we skip certain identity providers
         if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
             log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
@@ -193,7 +180,7 @@ public class McEventListenerProvider implements EventListenerProvider {
         }
     }
 
-    private void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress) {
+    protected void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress) {
         CloseableHttpClient client = buildHttpClient();
         if (client == null) {
             return;
@@ -226,8 +213,6 @@ public class McEventListenerProvider implements EventListenerProvider {
             } else {
                 log.info("User sync'ed!");
             }
-        } catch (ClientProtocolException e) {
-            log.error("Threw exception", e);
         } catch (IOException e) {
             log.error("Threw exception", e);
         } finally {
@@ -243,21 +228,21 @@ public class McEventListenerProvider implements EventListenerProvider {
         }
     }
 
-    private String getContent(HttpEntity entity) {
+    protected String getContent(HttpEntity entity) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
             entity.writeTo(os);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return "";
+            throw new RuntimeException(e);
         }
         byte[] bytes = os.toByteArray();
         String data = new String(bytes);
         return data;
     }
 
-    private CloseableHttpClient buildHttpClient() {
+    protected CloseableHttpClient buildHttpClient() {
         log.info("keystore path: " + keystorePath);
         log.info("truststorePath path: " + truststorePath);
         KeyStore keyStore = null;
@@ -273,18 +258,9 @@ public class McEventListenerProvider implements EventListenerProvider {
                 instreamTruststore = new FileInputStream(truststorePath);
                 trustStore.load(instreamTruststore, truststorePassword.toCharArray());
             }
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
             log.error("Threw exception", e);
-            return null;
-        } catch (CertificateException e) {
-            log.error("Threw exception", e);
-            return null;
-        } catch (IOException e) {
-            log.error("Threw exception", e);
-            return null;
-        } catch (KeyStoreException e) {
-            log.error("Threw exception", e);
-            return null;
+            throw new RuntimeException(e);
         } finally {
             try {
                 if (instreamKeystore != null) {
@@ -309,18 +285,9 @@ public class McEventListenerProvider implements EventListenerProvider {
             }
             sslContextBuilder.loadKeyMaterial(keyStore, keystorePassword.toCharArray());
             sslcontext = sslContextBuilder.build();
-        } catch (KeyManagementException e) {
+        } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
             log.error("Threw exception", e);
-            return null;
-        } catch (UnrecoverableKeyException e) {
-            log.error("Threw exception", e);
-            return null;
-        } catch (NoSuchAlgorithmException e) {
-            log.error("Threw exception", e);
-            return null;
-        } catch (KeyStoreException e) {
-            log.error("Threw exception", e);
-            return null;
+            throw new RuntimeException(e);
         }
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new NoopHostnameVerifier());
         CloseableHttpClient httpclient = HttpClients.custom()
