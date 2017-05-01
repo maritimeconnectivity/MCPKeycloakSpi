@@ -7,9 +7,16 @@ FROM jboss/keycloak-mysql:3.0.0.Final
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/
+ADD jgroup.xslt /opt/jboss/keycloak/
 RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; \
 	java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; \
-	rm /opt/jboss/keycloak/proxy-forward.xslt
+	java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/jgroup.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; \
+	rm /opt/jboss/keycloak/proxy-forward.xslt; \
+	rm /opt/jboss/keycloak/jgroup.xslt
+
+# DISABLE FOR NON-PROD BUILD!
+# Overwrite the standard entrypoint file and set host ip and hostname to env variables 
+ADD docker-entrypoint.sh /opt/jboss/
 
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
@@ -20,6 +27,11 @@ RUN mkdir -p /mc-eventprovider-conf
 USER jboss
 RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloudKeycloakSpi/lastSuccessfulBuild/artifact/target/mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar
 
+# DISABLE FOR NON-PROD BUILD!
+# Overwrite the standard CMD
+CMD ["--server-config", "standalone-ha.xml"]
+
+# Set the environmental variables
 ENV MYSQL_DATABASE keycloak
 ENV MYSQL_USERNAME keycloak
 ENV MYSQL_PASSWORD password
@@ -32,5 +44,3 @@ ENV SYNC_KEYSTORE_PASSWORD changeit
 ENV SYNC_TRUSTSTORE_PATH /mc-eventprovider-conf/mc-truststore.jks
 ENV SYNC_TRUSTSTORE_PASSWORD changeit
 ENV NOSYNC_IDPS certificates,projecttestusers
-ENV CERT_TRUSTSTORE_PATH /mc-eventprovider-conf/mc-truststore.jks
-ENV CERT_TRUSTSTORE_PASSWORD changeit

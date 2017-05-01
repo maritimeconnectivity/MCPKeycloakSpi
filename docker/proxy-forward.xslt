@@ -45,16 +45,7 @@
             </ks:provider>
         </ks:spi>
         <ks:spi name="authenticator">
-            <ks:provider name="certificate" enabled="true">
-                <ks:properties>
-                    <ks:property name="truststore-path">
-                        <xsl:attribute name="value">${env.CERT_TRUSTSTORE_PATH:/mc-eventprovider-conf/mc-truststore.jks}</xsl:attribute>
-                    </ks:property>
-                    <ks:property name="truststore-password">
-                        <xsl:attribute name="value">${env.CERT_TRUSTSTORE_PASSWORD:changeit}</xsl:attribute>
-                    </ks:property>
-                </ks:properties>
-            </ks:provider>
+            <ks:provider name="certificate" enabled="true"/>
             <ks:provider name="idp-update-no-promt" enabled="true"/>
         </ks:spi>
     </xsl:template>
