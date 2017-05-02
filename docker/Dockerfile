@@ -16,7 +16,7 @@ RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/config
 
 # DISABLE FOR NON-PROD BUILD!
 # Overwrite the standard entrypoint file and set host ip and hostname to env variables 
-ADD docker-entrypoint.sh /opt/jboss/
+#ADD docker-entrypoint.sh /opt/jboss/
 
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
@@ -29,7 +29,7 @@ RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view
 
 # DISABLE FOR NON-PROD BUILD!
 # Overwrite the standard CMD
-CMD ["--server-config", "standalone-ha.xml"]
+#CMD ["--server-config", "standalone-ha.xml"]
 
 # Set the environmental variables
 ENV MYSQL_DATABASE keycloak
