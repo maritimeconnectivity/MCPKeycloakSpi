@@ -25,7 +25,7 @@ USER root
 RUN mkdir -p /mc-eventprovider-conf
 
 USER jboss
-RUN cd  /opt/jboss/keycloak/providers; curl -O https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloudKeycloakSpi/lastSuccessfulBuild/artifact/target/mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar
+ADD mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar /opt/jboss/keycloak/providers/
 
 # DISABLE FOR NON-PROD BUILD!
 # Overwrite the standard CMD
