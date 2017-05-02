@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MaritimeCloud/MaritimeCloudKeycloakSpi.svg?branch=master)](https://travis-ci.org/MaritimeCloud/MaritimeCloudKeycloakSpi)
+
 # Maritime Cloud implementation of Keycloak SPI
 
 Keycloak has a series of Service Provider Interfaces (SPI) that allows for adding new functionality where needed. For Keycloak to work in as the Maritime Cloud Identity Broker the SPI mentioned below has been implemented.
