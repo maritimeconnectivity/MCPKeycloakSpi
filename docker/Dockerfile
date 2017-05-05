@@ -18,6 +18,10 @@ RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/config
 # Overwrite the standard entrypoint file and set host ip and hostname to env variables 
 #ADD docker-entrypoint.sh /opt/jboss/
 
+# DISABLE FOR NON-PROD BUILD!
+# Overwrite module conf for jgroup to include mysql driver as dependency
+#ADD module.xml keycloak/modules/system/layers/base/org/jgroups/main/module.xml
+
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
 

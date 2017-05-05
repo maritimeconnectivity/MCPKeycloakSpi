@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:tx="urn:jboss:domain:transactions:3.0">
 
     <xsl:output method="xml" indent="yes"/>
 
@@ -10,6 +11,12 @@
         </channels>
     </xsl:template>
 
+    <xsl:template match="//tx:subsystem/tx:core-environment">
+        <xsl:copy>
+            <xsl:attribute name="node-identifier">${jboss.node.name}</xsl:attribute>
+            <xsl:apply-templates select="node()|@*"/>
+        </xsl:copy>
+    </xsl:template>
 
     <xsl:template match="//*[local-name()='subsystem' and namespace-uri()='urn:jboss:domain:jgroups:4.0']/*[local-name()='stacks' and namespace-uri()='urn:jboss:domain:jgroups:4.0']">
         <stacks xmlns="urn:jboss:domain:jgroups:4.0" default="tcp">
@@ -19,7 +26,7 @@
                 </transport>
 
                 <protocol type="JDBC_PING">
-                    <property name="connection_driver">org.postgresql.Driver</property>
+                    <property name="connection_driver">com.mysql.jdbc.Driver</property>
                     <property name="connection_url">jdbc:mysql://${env.MYSQL_PORT_3306_TCP_ADDR}:${env.MYSQL_PORT_3306_TCP_PORT}/${env.MYSQL_DATABASE}</property>
                     <property name="connection_username">${env.MYSQL_USERNAME:keycloak}</property>
                     <property name="connection_password">${env.MYSQL_PASSWORD:password}</property>
