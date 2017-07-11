@@ -127,12 +127,12 @@
           <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-surefire-provider</artifactId>
-            <version>RELEASE</version>
+            <version>1.0.0-${junit5.milestone}</version>
           </dependency>
           <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>RELEASE</version>
+            <version>5.0.0-${junit5.milestone}</version>
           </dependency>
         </dependencies>
       </plugin>
