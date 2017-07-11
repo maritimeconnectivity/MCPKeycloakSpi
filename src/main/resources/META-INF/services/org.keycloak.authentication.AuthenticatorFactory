@@ -1,2 +1,1 @@
 net.maritimecloud.identityregistry.keycloak.spi.authenticators.certificate.CertificateAuthenticatorFactory
-net.maritimecloud.identityregistry.keycloak.spi.authenticators.idpupdatenoprompt.IdpUpdateNoPromptAuthenticatorFactory

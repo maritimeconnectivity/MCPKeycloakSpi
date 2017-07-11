@@ -9,7 +9,7 @@ function authenticate(context) {
 
     LOG.info("Script Auth running 1");
 
-    if (context.getClientSession().getNote("EXISTING_USER_INFO") != null) {
+    if (context.getClientSession().getNote("EXISTING_USER_INFO") !== null) {
         context.attempted();
         return;
     }
@@ -17,7 +17,7 @@ function authenticate(context) {
 
     var clientSession = context.getClientSession();
     var serializedCtx = SerializedBrokeredIdentityContext.readFromClientSession(clientSession, "BROKERED_CONTEXT");
-    if (serializedCtx == null) {
+    if (serializedCtx === null) {
         LOG.info("serializedCtx is null");
         context.failure(AuthenticationFlowError.IDENTITY_PROVIDER_ERROR);
         return;
@@ -36,7 +36,7 @@ function authenticate(context) {
     var mrn_prefix = mrn_split.slice(0, mrn_split.length - 1).join(":");
     var email = mrn_split[mrn_split.length - 1];
     var username = mrn_prefix + ":" + email.split("@")[0];
-    if (username == null) {
+    if (username === null) {
         LOG.info(realm.isRegistrationEmailAsUsername() ? "Email" : "Username");
         context.getClientSession().setNote("ENFORCE_UPDATE_PROFILE", "true");
         context.resetFlow();
@@ -67,7 +67,7 @@ function authenticate(context) {
 
     // TODO: Do some check to ensure that only the certificate IDP + one other IDP is linked to a user.
 
-    if (existingUser == null) {
+    if (existingUser === null) {
         LOG.info("No duplication detected. Creating account for user '"+ username + "' and linking with identity provider: "+ brokerContext.getIdpConfig().getAlias());
 
         var /*UserModel*/ brokeredUser = session.users().addUser(realm, username);
@@ -111,11 +111,11 @@ function getUsername(/*AuthenticationFlowContext*/ context, /*BrokeredIdentityCo
 
 function deleteDuplicateUserEmail(/*UserModel*/ existingUser, /*AuthenticationFlowContext*/ context, /*BrokeredIdentityContext*/ brokerContext) {
     var /*String*/ email = brokerContext.getEmail();
-    if (email != null && !email.isEmpty()) {
+    if (email !== null && !email.isEmpty()) {
         var /*UserModel*/ userWithEmail = context.getSession().users().getUserByEmail(email, context.getRealm());
-        if (userWithEmail != null) {
+        if (userWithEmail !== null) {
             // Check if existingUser and the userWithEmail is the same
-            if (existingUser != null && userWithEmail.getId().equals(existingUser.getId())) {
+            if (existingUser !== null && userWithEmail.getId().equals(existingUser.getId())) {
                 // All is good - continue to merge/link the users
                 LOG.info("existingUser and the userWithEmail is the same - continue to merge/link the users.");
                 return;

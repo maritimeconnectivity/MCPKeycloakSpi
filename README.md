@@ -51,16 +51,9 @@ The Authenticator is setup by adding the jar in the `providers/` folder. In `sta
 Either set the environmental variables mentioned in the xml before running Keycloak, rely on the default values or hardcode the values into the xml. The truststore should contain the Maritime Cloud Identity Registry Root certificate so that client certificates that are issued by it are trusted by the authenticator.
 
 
-## Authenticator for updating without prompt
+## Authenticator for updating without prompt (JavaScript)
 
 This SPI is implemented in order to allow copying of user data from IDPs to the local Keycloak without prompting the user for review or trying to link existing accounts. It also deletes any existing user with a conflicting email-address. This is done to workaround a current limitation in Keycloak where 2 users cannot share an email address.
 
-The authenticator is available in Keycloaks Authentication Flow configuration screen when adding new execution as "Update user without prompting for review".
+The authenticator is implemented in JavaScript (available in the "javascript-authenticator" folder) and must be manually added in Keycloaks Authentication Flow configuration screen as a Script Authenticator (insert using copy/paste). The authenticator should be the only execution in its flow.
 
-The Authenticator is setup by adding the jar in the `providers/` folder. In `standalone/configuration/standalone.xml` the following section is added in the /server/provider/subsystem section:
-
-```xml
-<spi name="authenticator">
-	<provider name="idp-update-no-promt" enabled="true"/>
-</spi>
-```

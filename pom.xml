@@ -15,7 +15,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <keycloak.version>3.1.0.Final</keycloak.version>
+    <keycloak.version>3.2.0.Final</keycloak.version>
+    <junit5.milestone>M4</junit5.milestone>
   </properties>
 
   <dependencies>
@@ -73,19 +74,19 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>RELEASE</version>
+      <version>5.0.0-${junit5.milestone}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-engine</artifactId>
-      <version>RELEASE</version>
+      <version>1.0.0-${junit5.milestone}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-launcher</artifactId>
-      <version>RELEASE</version>
+      <version>1.0.0-${junit5.milestone}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
