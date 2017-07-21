@@ -3,7 +3,7 @@
 # 
 # A custom keycloak-server.json conf file must be available in the folder mounted to /mc-eventprovider-conf.
 # A trust and keystore must also be placed in the folder.
-FROM jboss/keycloak-mysql:3.0.0.Final
+FROM jboss/keycloak-mysql:3.2.0.Final
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/
@@ -14,13 +14,13 @@ RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/config
 	rm /opt/jboss/keycloak/proxy-forward.xslt; \
 	rm /opt/jboss/keycloak/jgroup.xslt
 
-# DISABLE FOR NON-PROD BUILD!
+# DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite the standard entrypoint file and set host ip and hostname to env variables 
-#ADD docker-entrypoint.sh /opt/jboss/
+ADD docker-entrypoint.sh /opt/jboss/
 
-# DISABLE FOR NON-PROD BUILD!
+# DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite module conf for jgroup to include mysql driver as dependency
-#ADD module.xml keycloak/modules/system/layers/base/org/jgroups/main/module.xml
+ADD module.xml keycloak/modules/system/layers/base/org/jgroups/main/module.xml
 
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
@@ -31,9 +31,9 @@ RUN mkdir -p /mc-eventprovider-conf
 USER jboss
 ADD mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar /opt/jboss/keycloak/providers/
 
-# DISABLE FOR NON-PROD BUILD!
+# DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite the standard CMD
-#CMD ["--server-config", "standalone-ha.xml"]
+CMD ["--server-config", "standalone-ha.xml"]
 
 # Set the environmental variables
 ENV MYSQL_DATABASE keycloak

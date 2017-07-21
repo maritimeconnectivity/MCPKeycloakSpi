@@ -21,6 +21,6 @@ before_script:
 
 script:
     # Build the docker image
-    - docker build --no-cache -t dmadk/keycloak-mysql-mc docker
+    - docker build --no-cache -t dmadk/keycloak-mysql-mc-ha docker
     # Push the image to the repository
-    - docker push dmadk/keycloak-mysql-mc
+    - docker push dmadk/keycloak-mysql-mc-ha
