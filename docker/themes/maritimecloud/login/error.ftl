@@ -16,7 +16,6 @@
         document.addEventListener("DOMContentLoaded", function () {
             var kcForm = document.getElementById("kc-form");
             var error = document.getElementById("kc-error-message");
-            console.log(error);
 
             if (error) {
                 kcForm.style.display = "inline";
