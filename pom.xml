@@ -16,7 +16,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <keycloak.version>3.2.1.Final</keycloak.version>
-    <junit5.milestone>M4</junit5.milestone>
   </properties>
 
   <dependencies>
@@ -58,7 +57,7 @@
     <dependency>
       <groupId>net.maritimecloud.pki</groupId>
       <artifactId>mc-pki</artifactId>
-      <version>0.6.0-SNAPSHOT</version>
+      <version>0.7.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -74,19 +73,19 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.0.0-${junit5.milestone}</version>
+      <version>5.0.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-engine</artifactId>
-      <version>1.0.0-${junit5.milestone}</version>
+      <version>1.0.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-launcher</artifactId>
-      <version>1.0.0-${junit5.milestone}</version>
+      <version>1.0.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -127,12 +126,12 @@
           <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-surefire-provider</artifactId>
-            <version>1.0.0-${junit5.milestone}</version>
+            <version>1.0.1</version>
           </dependency>
           <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.0.0-${junit5.milestone}</version>
+            <version>5.0.1</version>
           </dependency>
         </dependencies>
       </plugin>
