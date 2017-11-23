@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/MaritimeCloud/MaritimeCloudKeycloakSpi.svg?branch=master)](https://travis-ci.org/MaritimeCloud/MaritimeCloudKeycloakSpi)
+[![Build Status](https://travis-ci.org/MaritimeCloud/MCPKeycloakSpi.svg?branch=master)](https://travis-ci.org/MaritimeCloud/MCPKeycloakSpi)
 
 # Maritime Cloud implementation of Keycloak SPI
 
