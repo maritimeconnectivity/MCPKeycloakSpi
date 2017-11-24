@@ -1,13 +1,13 @@
 [![Build Status](https://travis-ci.org/MaritimeCloud/MCPKeycloakSpi.svg?branch=master)](https://travis-ci.org/MaritimeCloud/MCPKeycloakSpi)
 
-# Maritime Cloud implementation of Keycloak SPI
+# Maritime Connectivity Platform implementation of Keycloak SPI
 
-Keycloak has a series of Service Provider Interfaces (SPI) that allows for adding new functionality where needed. For Keycloak to work in as the Maritime Cloud Identity Broker the SPI mentioned below has been implemented.
+Keycloak has a series of Service Provider Interfaces (SPI) that allows for adding new functionality where needed. For Keycloak to work in as the MCP Identity Broker the SPI mentioned below has been implemented.
 
-## Maritime Cloud Event Listener
+## MCP Event Listener
 This is an implementation of a Keycloak EventListener, implementing the EventListener SPI as described [here](https://keycloak.gitbooks.io/documentation/server_development/topics/providers.html).
 
-This is used to keep the user database in the MaritimeCloud Identity Registry API in sync with information fetched during login using the MaritimeCloud ID Broker. When a user logs in this EventListener will make a call to a REST webservice which includes the user information passed from the users Identity Provider. The webservice call uses a certificate to authenticate itself against the API. The EventListener is setup by adding `mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar` in the `providers/` folder. In `standalone/configuration/standalone.xml` the following section is added in the /server/provider/subsystem section:
+This is used to keep the user database in the MCP Identity Registry API in sync with information fetched during login using the MCP ID Broker. When a user logs in this EventListener will make a call to a REST webservice which includes the user information passed from the users Identity Provider. The webservice call uses a certificate to authenticate itself against the API. The EventListener is setup by adding `mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar` in the `providers/` folder. In `standalone/configuration/standalone.xml` the following section is added in the /server/provider/subsystem section:
 
 ```xml
  <spi name="eventsListener">
@@ -48,7 +48,7 @@ The Authenticator is setup by adding the jar in the `providers/` folder. In `sta
 </spi>
 ```
 
-Either set the environmental variables mentioned in the xml before running Keycloak, rely on the default values or hardcode the values into the xml. The truststore should contain the Maritime Cloud Identity Registry Root certificate so that client certificates that are issued by it are trusted by the authenticator.
+Either set the environmental variables mentioned in the xml before running Keycloak, rely on the default values or hardcode the values into the xml. The truststore should contain the MCP Identity Registry Root certificate so that client certificates that are issued by it are trusted by the authenticator.
 
 
 ## Authenticator for updating without prompt (JavaScript)
