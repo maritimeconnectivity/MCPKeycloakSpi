@@ -25,6 +25,9 @@ ADD module.xml keycloak/modules/system/layers/base/org/jgroups/main/module.xml
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
 
+# Set locales for image to support UTF-8
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
 USER root
 RUN mkdir -p /mc-eventprovider-conf
 
