@@ -14,27 +14,9 @@
  */
 package net.maritimecloud.identityregistry.keycloak.spi.eventprovider;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.net.URLEncoder;
-import java.util.regex.Pattern;
-
-import javax.net.ssl.SSLContext;
-
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -45,6 +27,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
@@ -53,7 +36,24 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.util.JsonSerialization;
-import org.jboss.logging.Logger;
+
+import javax.net.ssl.SSLContext;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class McEventListenerProvider implements EventListenerProvider {
 
@@ -69,7 +69,7 @@ public class McEventListenerProvider implements EventListenerProvider {
     private String truststorePassword = "";
     private String[] idpNotToSync = null;
 
-    public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
+        public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
         this.session = session;
         this.serverRoot = serverRoot;
         this.keystorePath = keystorePath;
@@ -177,7 +177,73 @@ public class McEventListenerProvider implements EventListenerProvider {
                 }
             }
             sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
+            // Get the roles and the organisations that the user can act on behalf of
+            List<String> userRoles = getUserRoles(user.getUsername());
+            user.setAttribute("roles", userRoles);
+            List<String> actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
+            user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
         }
+    }
+
+    protected List<String> getUserRoles(String userMrn) {
+        if (serverRoot != null) {
+            CloseableHttpClient client = buildHttpClient();
+            if (client == null) {
+                log.error("Could not get build http client to get user roles");
+                return new ArrayList<>();
+            }
+            String uri = serverRoot + "/service/" + userMrn + "/roles";
+            HttpGet get = new HttpGet(uri);
+            CloseableHttpResponse response;
+            try {
+                response = client.execute(get);
+                int status = response.getStatusLine().getStatusCode();
+                HttpEntity entity = response.getEntity();
+                if (status != 200) {
+                    log.error("Getting user roles failed");
+                } else {
+                    String json = getContent(entity);
+                    List<String> roles = (ArrayList<String>) JsonSerialization.readValue(json, List.class);
+                    if (roles != null) {
+                        return roles;
+                    }
+                }
+
+            } catch (IOException e) {
+                log.error("Threw exception", e);
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    protected List<String> getActingOnBehalfOf(String userMrn) {
+        if (serverRoot != null) {
+            CloseableHttpClient client = buildHttpClient();
+            if (client == null) {
+                log.error("Could not build http client");
+                return new ArrayList<>();
+            }
+            String uri = serverRoot + "/service/" + userMrn + "/acting-on-behalf-of";
+            HttpGet get = new HttpGet(uri);
+            CloseableHttpResponse response;
+            try {
+                response = client.execute(get);
+                int status = response.getStatusLine().getStatusCode();
+                HttpEntity entity = response.getEntity();
+                if (status != 200) {
+                    log.error("Getting acting on behalf of orgs failed");
+                } else {
+                    String json = getContent(entity);
+                    List<String> orgs = (ArrayList<String>) JsonSerialization.readValue(json, List.class);
+                    if (orgs != null) {
+                        return orgs;
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Threw exception", e);
+            }
+        }
+        return new ArrayList<>();
     }
 
     protected void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress) {
