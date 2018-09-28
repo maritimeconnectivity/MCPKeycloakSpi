@@ -28,6 +28,8 @@ ADD themes /opt/jboss/keycloak/themes/
 # Set locales for image to support UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
+ENV DB_VENDOR mysql
+
 USER root
 RUN mkdir -p /mc-eventprovider-conf
 
