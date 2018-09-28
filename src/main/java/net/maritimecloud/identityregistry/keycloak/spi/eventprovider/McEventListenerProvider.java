@@ -114,6 +114,19 @@ public class McEventListenerProvider implements EventListenerProvider {
             }
         }
 
+        RealmModel realm;
+        UserModel user = null;
+
+        if (event.getRealmId() != null && event.getUserId() != null) {
+            realm = session.realms().getRealm(event.getRealmId());
+            user = session.users().getUserById(event.getUserId(), realm);
+            // Get the roles and the organisations that the user can act on behalf of
+            List<String> userRoles = getUserRoles(user.getUsername());
+            user.setAttribute("roles", userRoles);
+            List<String> actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
+            user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+        }
+
         log.info("event info: " + sb.toString());
 
         // Only users coming from an identity provider is sync'ed.
@@ -129,8 +142,6 @@ public class McEventListenerProvider implements EventListenerProvider {
         }
 
         if (event.getRealmId() != null && event.getUserId() != null) {
-            RealmModel realm = session.realms().getRealm(event.getRealmId());
-            UserModel user = session.users().getUserById(event.getUserId(), realm);
             User mcUser = new User();
             mcUser.setEmail(user.getEmail());
             mcUser.setFirstName(user.getFirstName());
@@ -177,11 +188,6 @@ public class McEventListenerProvider implements EventListenerProvider {
                 }
             }
             sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
-            // Get the roles and the organisations that the user can act on behalf of
-            List<String> userRoles = getUserRoles(user.getUsername());
-            user.setAttribute("roles", userRoles);
-            List<String> actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
-            user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
         }
     }
 

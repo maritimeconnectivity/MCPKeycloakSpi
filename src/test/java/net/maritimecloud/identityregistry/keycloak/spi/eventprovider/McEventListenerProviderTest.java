@@ -99,7 +99,7 @@ class McEventListenerProviderTest {
         mcEventListenerProvider.onEvent(this.mockedEvent);
         verify(mockedEvent, times(2)).getType();
         verify(mockedEvent, times(2)).getDetails();
-        verify(mockedEvent, times(1)).getRealmId();
+        verify(mockedEvent, times(2)).getRealmId();
     }
 
     /**
@@ -121,7 +121,7 @@ class McEventListenerProviderTest {
         mcEventListenerProvider.onEvent(this.mockedEvent);
         verify(mockedEvent, times(2)).getType();
         verify(mockedEvent, times(2)).getDetails();
-        verify(mockedEvent, times(1)).getRealmId();
+        verify(mockedEvent, times(2)).getRealmId();
     }
 
 
@@ -165,7 +165,7 @@ class McEventListenerProviderTest {
         // Verify the execution went as planed
         verify(mockedEvent, times(2)).getType();
         verify(mockedEvent, times(2)).getDetails();
-        verify(mockedEvent, times(3)).getRealmId();
+        verify(mockedEvent, times(4)).getRealmId();
         verify(mockedUserModel, times(1)).getEmail();
         verify(mcEventListenerProvider, times(1)).sendUserUpdate(any(), eq("urn:mrn:mcl:org:dma"), eq(null), eq(null));
     }
