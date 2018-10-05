@@ -69,7 +69,7 @@ public class McEventListenerProvider implements EventListenerProvider {
     private String truststorePassword = "";
     private String[] idpNotToSync = null;
 
-        public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
+    public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
         this.session = session;
         this.serverRoot = serverRoot;
         this.keystorePath = keystorePath;
@@ -117,15 +117,18 @@ public class McEventListenerProvider implements EventListenerProvider {
         RealmModel realm;
         UserModel user = null;
 
+        List<String> userRoles = new ArrayList<>();
+        List<String> actingOnBehalfOf = new ArrayList<>();
+
         if (event.getRealmId() != null && event.getUserId() != null) {
             realm = session.realms().getRealm(event.getRealmId());
             user = session.users().getUserById(event.getUserId(), realm);
             // check that it is actually a user
             if (user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                List<String> userRoles = getUserRoles(user.getUsername());
+                userRoles = getUserRoles(user.getUsername());
                 user.setAttribute("roles", userRoles);
-                List<String> actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
+                actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
                 user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
             }
         }
@@ -191,6 +194,17 @@ public class McEventListenerProvider implements EventListenerProvider {
                 }
             }
             sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
+
+            // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
+            if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty()) {
+                if (user.getUsername().contains(":user:")) {
+                    // Get the roles and the organisations that the user can act on behalf of
+                    userRoles = getUserRoles(user.getUsername());
+                    user.setAttribute("roles", userRoles);
+                    actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
+                    user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+                }
+            }
         }
     }
 
