@@ -59,15 +59,15 @@ public class McEventListenerProvider implements EventListenerProvider {
 
     private static final Logger log = Logger.getLogger(McEventListenerProvider.class);
 
-    public final static Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
     private KeycloakSession session;
-    private String serverRoot = "";
-    private String keystorePath = "";
-    private String keystorePassword = "";
-    private String truststorePath = "";
-    private String truststorePassword = "";
-    private String[] idpNotToSync = null;
+    private String serverRoot;
+    private String keystorePath;
+    private String keystorePassword;
+    private String truststorePath;
+    private String truststorePassword;
+    private String[] idpNotToSync;
 
     public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
         this.session = session;
@@ -80,7 +80,7 @@ public class McEventListenerProvider implements EventListenerProvider {
     }
 
     public void close() {
-        // TODO Auto-generated method stub
+        // not needed
         
     }
 
@@ -156,7 +156,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             mcUser.setMrn(user.getUsername());
             String orgMrn = null;
             List<String> orgList = user.getAttributes().get("org");
-            if (orgList != null && orgList.size() > 0) {
+            if (orgList != null && !orgList.isEmpty()) {
                 orgMrn = orgList.get(0);
             }
             if (orgMrn == null || orgMrn.isEmpty()) {
@@ -164,31 +164,31 @@ public class McEventListenerProvider implements EventListenerProvider {
                 return;
             }
             List<String> permissionsList = user.getAttributes().get("permissions");
-            if (permissionsList != null && permissionsList.size() > 0) {
+            if (permissionsList != null && !permissionsList.isEmpty()) {
                 mcUser.setPermissions(String.join(", ", permissionsList));
             }
             // in case the user comes from an Identity Provider that hosts multiple organizations, the organization is
             // not always known, so some extra info is/can be given, which is then used for sync
             List<String> orgNameList = user.getAttributes().get("org-name");
             String orgName = null;
-            if (orgNameList != null && orgNameList.size() > 0) {
+            if (orgNameList != null && !orgNameList.isEmpty()) {
                 orgName = orgNameList.get(0);
             }
             List<String> orgAddressList = user.getAttributes().get("org-address");
             String orgAddress = null;
-            if (orgAddressList != null && orgAddressList.size() > 0) {
+            if (orgAddressList != null && !orgAddressList.isEmpty()) {
                 orgAddress = orgAddressList.get(0);
             }
             // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
             // in the orgName. Also puts a dummy value in the orgAddress if needed.
             if (orgName != null && MRN_PATTERN.matcher(orgName).matches()) {
-                int idx = orgMrn.lastIndexOf(":") + 1;
+                int idx = orgMrn.lastIndexOf(':') + 1;
                 orgName = orgMrn.substring(idx);
                 if (orgAddress == null || orgAddress.isEmpty()) {
                     orgAddress = "A round the corner, The Seven Seas";
                 }
             }
-            if (user != null && user.getAttributes() != null) {
+            if (user.getAttributes() != null) {
                 for (Map.Entry<String, List<String>> e: user.getAttributes().entrySet()) {
                     log.info("user attr: " + e.getKey() + ", value: "  + String.join(", ", e.getValue()));
                 }
@@ -196,14 +196,12 @@ public class McEventListenerProvider implements EventListenerProvider {
             sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
 
             // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
-            if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty()) {
-                if (user.getUsername().contains(":user:")) {
-                    // Get the roles and the organisations that the user can act on behalf of
-                    userRoles = getUserRoles(user.getUsername());
-                    user.setAttribute("roles", userRoles);
-                    actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
-                    user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
-                }
+            if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
+                // Get the roles and the organisations that the user can act on behalf of
+                userRoles = getUserRoles(user.getUsername());
+                user.setAttribute("roles", userRoles);
+                actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
+                user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
             }
         }
     }
@@ -311,7 +309,6 @@ public class McEventListenerProvider implements EventListenerProvider {
                 }
                 client.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 log.error("Threw exception", e);
             }
         }
@@ -322,8 +319,7 @@ public class McEventListenerProvider implements EventListenerProvider {
         try {
             entity.writeTo(os);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("Could not get content", e);
             throw new RuntimeException(e);
         }
         byte[] bytes = os.toByteArray();
@@ -386,7 +382,7 @@ public class McEventListenerProvider implements EventListenerProvider {
     }
 
     public void onEvent(AdminEvent event, boolean includeRepresentation) {
-        // TODO Auto-generated method stub
+        // not needed
         
     }
 
