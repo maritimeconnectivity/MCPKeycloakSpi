@@ -22,14 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="org.jgroups">
+<module xmlns="urn:jboss:module:1.7" name="org.jgroups">
 
     <resources>
-        <resource-root path="jgroups-3.6.6.Final.jar"/>
+        <resource-root path="jgroups-4.0.13.Final.jar"/>
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="org.jgroups.azure"/>
+        <module name="org.jgroups.kubernetes"/>
         <module name="com.mysql.jdbc"/>
     </dependencies>
 </module>
