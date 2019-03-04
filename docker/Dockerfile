@@ -42,7 +42,7 @@ CMD ["-c", "standalone-ha.xml"]
 
 # Set the environmental variables
 ENV DB_DATABASE keycloak
-ENV DB_USERNAME keycloak
+ENV DB_USER keycloak
 ENV DB_PASSWORD password
 ENV DB_ADDR localhost
 ENV DB_PORT 3306
