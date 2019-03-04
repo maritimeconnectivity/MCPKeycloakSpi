@@ -41,11 +41,11 @@ ADD mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar /opt/jboss
 CMD ["-c", "standalone-ha.xml"]
 
 # Set the environmental variables
-ENV MYSQL_DATABASE keycloak
-ENV MYSQL_USERNAME keycloak
-ENV MYSQL_PASSWORD password
-ENV MYSQL_PORT_3306_TCP_ADDR localhost
-ENV MYSQL_PORT_3306_TCP_PORT 3306
+ENV DB_DATABASE keycloak
+ENV DB_USERNAME keycloak
+ENV DB_PASSWORD password
+ENV DB_ADDR localhost
+ENV DB_PORT 3306
 
 ENV MC_IDREG_SERVER_ROOT https://localhost
 ENV SYNC_KEYSTORE_PATH /mc-eventprovider-conf/idbroker-updater.jks

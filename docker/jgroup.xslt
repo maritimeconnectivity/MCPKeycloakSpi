@@ -27,9 +27,9 @@
 
                 <protocol type="JDBC_PING">
                     <property name="connection_driver">com.mysql.jdbc.Driver</property>
-                    <property name="connection_url">jdbc:mysql://${env.MYSQL_PORT_3306_TCP_ADDR}:${env.MYSQL_PORT_3306_TCP_PORT}/${env.MYSQL_DATABASE}</property>
-                    <property name="connection_username">${env.MYSQL_USERNAME:keycloak}</property>
-                    <property name="connection_password">${env.MYSQL_PASSWORD:password}</property>
+                    <property name="connection_url">jdbc:mysql://${env.DB_ADDR}:${env.DB_PORT}/${env.DB_DATABASE}</property>
+                    <property name="connection_username">${env.DB_USERNAME:keycloak}</property>
+                    <property name="connection_password">${env.DB_PASSWORD:password}</property>
                     <property name="initialize_sql">
                       CREATE TABLE IF NOT EXISTS JGROUPSPING (
                         own_addr varchar(200) NOT NULL,
