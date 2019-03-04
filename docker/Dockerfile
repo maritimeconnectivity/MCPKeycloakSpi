@@ -3,7 +3,7 @@
 # 
 # A custom keycloak-server.json conf file must be available in the folder mounted to /mc-eventprovider-conf.
 # A trust and keystore must also be placed in the folder.
-FROM jboss/keycloak:3.2.1.Final
+FROM jboss/keycloak:4.8.3.Final
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/
@@ -16,7 +16,7 @@ RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/config
 
 # DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite the standard entrypoint file and set host ip and hostname to env variables 
-ADD docker-entrypoint.sh /opt/jboss/
+ADD docker-entrypoint.sh /opt/jboss/tools/
 
 # DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite module conf for jgroup to include mysql driver as dependency
@@ -38,14 +38,14 @@ ADD mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar /opt/jboss
 
 # DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite the standard CMD
-CMD ["--server-config", "standalone-ha.xml"]
+CMD ["-c", "standalone-ha.xml"]
 
 # Set the environmental variables
-ENV MYSQL_DATABASE keycloak
-ENV MYSQL_USERNAME keycloak
-ENV MYSQL_PASSWORD password
-ENV MYSQL_PORT_3306_TCP_ADDR localhost
-ENV MYSQL_PORT_3306_TCP_PORT 3306
+ENV DB_DATABASE keycloak
+ENV DB_USER keycloak
+ENV DB_PASSWORD password
+ENV DB_ADDR localhost
+ENV DB_PORT 3306
 
 ENV MC_IDREG_SERVER_ROOT https://localhost
 ENV SYNC_KEYSTORE_PATH /mc-eventprovider-conf/idbroker-updater.jks

@@ -24,3 +24,5 @@ script:
     - docker build --no-cache -t dmadk/keycloak-mysql-mc-ha docker
     # Push the image to the repository
     - docker push dmadk/keycloak-mysql-mc-ha
+    # Remember to logout of docker
+    - docker logout
