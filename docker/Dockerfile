@@ -1,8 +1,6 @@
 # Run like this:
-# docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e MYSQL_DATABASE=kcdb -e MYSQL_USERNAME=kcuser -e MYSQL_PASSWORD=kcpassword -e MYSQL_PORT_3306_TCP_PORT=3306 -e MYSQL_PORT_3306_TCP_ADDR=localhost keycloak-mysql-mc:latest
-# 
-# A custom keycloak-server.json conf file must be available in the folder mounted to /mc-eventprovider-conf.
-# A trust and keystore must also be placed in the folder.
+# docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e DB_DATABASE=kcdb -e DB_USERNAME=kcuser -e DB_PASSWORD=kcpassword -e DB_PORT=3306 -e DB_ADDR=localhost dmadk/keycloak-mysql-mc-ha:latest
+#
 FROM jboss/keycloak:4.8.3.Final
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
@@ -14,11 +12,9 @@ RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/config
 	rm /opt/jboss/keycloak/proxy-forward.xslt; \
 	rm /opt/jboss/keycloak/jgroup.xslt
 
-# DISABLE FOR NON-DISTRIBUTED BUILD!
-# Overwrite the standard entrypoint file and set host ip and hostname to env variables 
+# Overwrite the standard entrypoint file and set host ip and hostname to env variables
 ADD docker-entrypoint.sh /opt/jboss/tools/
 
-# DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite module conf for jgroup to include mysql driver as dependency
 ADD module.xml keycloak/modules/system/layers/base/org/jgroups/main/module.xml
 
@@ -36,7 +32,6 @@ RUN mkdir -p /mc-eventprovider-conf
 USER jboss
 ADD mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar /opt/jboss/keycloak/providers/
 
-# DISABLE FOR NON-DISTRIBUTED BUILD!
 # Overwrite the standard CMD
 CMD ["-c", "standalone-ha.xml"]
 
