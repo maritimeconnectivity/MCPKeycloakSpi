@@ -1,7 +1,7 @@
 # Run like this:
 # docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e DB_DATABASE=kcdb -e DB_USERNAME=kcuser -e DB_PASSWORD=kcpassword -e DB_PORT=3306 -e DB_ADDR=localhost dmadk/keycloak-mysql-mc-ha:latest
 #
-FROM jboss/keycloak:4.8.3.Final
+FROM jboss/keycloak:6.0.1
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/
