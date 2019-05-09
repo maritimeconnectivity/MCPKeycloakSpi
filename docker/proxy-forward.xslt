@@ -2,8 +2,8 @@
 
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ut="urn:jboss:domain:undertow:7.0"
-                xmlns:do="urn:jboss:domain:8.0"
+                xmlns:ut="urn:jboss:domain:undertow:8.0"
+                xmlns:do="urn:jboss:domain:10.0"
                 xmlns:ks="urn:jboss:domain:keycloak-server:1.1">
 
     <xsl:output method="xml" indent="yes"/>
