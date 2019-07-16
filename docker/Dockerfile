@@ -5,15 +5,13 @@ FROM jboss/keycloak:6.0.1
 
 # Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
 ADD proxy-forward.xslt /opt/jboss/keycloak/
-ADD jgroup.xslt /opt/jboss/keycloak/
 RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; \
 	java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; \
-	java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/jgroup.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; \
-	rm /opt/jboss/keycloak/proxy-forward.xslt; \
-	rm /opt/jboss/keycloak/jgroup.xslt
-
+	rm /opt/jboss/keycloak/proxy-forward.xslt
 # Overwrite the standard entrypoint file and set host ip and hostname to env variables
 ADD docker-entrypoint.sh /opt/jboss/tools/
+
+ADD JDBC_PING.cli /opt/jboss/tools/cli/jgroups/discovery/
 
 # Overwrite module conf for jgroup to include mysql driver as dependency
 ADD module.xml keycloak/modules/system/layers/base/org/jgroups/main/module.xml
@@ -41,6 +39,7 @@ ENV DB_USER keycloak
 ENV DB_PASSWORD password
 ENV DB_ADDR localhost
 ENV DB_PORT 3306
+ENV JGROUPS_DISCOVERY_PROTOCOL=JDBC_PING
 
 ENV MC_IDREG_SERVER_ROOT https://localhost
 ENV SYNC_KEYSTORE_PATH /mc-eventprovider-conf/idbroker-updater.jks
