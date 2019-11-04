@@ -105,6 +105,8 @@ if [ "$DB_VENDOR" == "" ]; then
         export DB_VENDOR="mariadb"
     elif (getent hosts oracle &>/dev/null); then
         export DB_VENDOR="oracle"
+    elif (getent hosts mssql &>/dev/null); then
+        export DB_VENDOR="mssql"
     fi
 fi
 
@@ -118,6 +120,8 @@ if [ "$DB_VENDOR" == "" ]; then
         export DB_VENDOR="mariadb"
     elif (printenv | grep '^ORACLE_ADDR=' &>/dev/null); then
         export DB_VENDOR="oracle"
+    elif (printenv | grep '^MSSQL_ADDR=' &>/dev/null); then
+        export DB_VENDOR="mssql"
     fi
 fi
 
@@ -129,7 +133,10 @@ fi
 # Set DB name
 case "$DB_VENDOR" in
     postgres)
-        DB_NAME="PostgreSQL";;
+        DB_NAME="PostgreSQL"
+        if [ -z "$DB_PORT" ] ; then DB_PORT="5432" ; fi
+        append_port_db_addr
+        ;;
     mysql)
         DB_NAME="MySQL";;
     mariadb)
@@ -138,6 +145,8 @@ case "$DB_VENDOR" in
         DB_NAME="Oracle";;
     h2)
         DB_NAME="Embedded H2";;
+    mssql)
+        DB_NAME="Microsoft SQL Server";;
     *)
         echo "Unknown DB vendor $DB_VENDOR"
         exit 1
@@ -159,6 +168,22 @@ function set_legacy_vars() {
 }
 set_legacy_vars `echo $DB_VENDOR | tr a-z A-Z`
 
+# if the DB_VENDOR is postgres then append port to the DB_ADDR
+function append_port_db_addr() {
+  local db_host_regex='^[a-zA-Z0-9]([a-zA-Z0-9]|-|.)*:[0-9]{4,5}$'
+  IFS=',' read -ra addresses <<< "$DB_ADDR"
+  DB_ADDR=""
+  for i in "${addresses[@]}"; do
+    if [[ $i =~ $db_host_regex ]]; then
+        DB_ADDR+=$i;
+     else
+        DB_ADDR+="${i}:${DB_PORT}";
+     fi
+        DB_ADDR+=","
+  done
+  DB_ADDR=$(echo $DB_ADDR | sed 's/.$//') # remove the last comma
+}
+
 # Configure DB
 
 echo "========================================================================="
@@ -178,7 +203,7 @@ if [ -z "$JGROUPS_DISCOVERY_EXTERNAL_IP" ]; then
 fi
 
 /opt/jboss/tools/x509.sh
-/opt/jboss/tools/jgroups.sh $JGROUPS_DISCOVERY_PROTOCOL $JGROUPS_DISCOVERY_PROPERTIES
+/opt/jboss/tools/jgroups.sh
 /opt/jboss/tools/autorun.sh
 
 ##################
