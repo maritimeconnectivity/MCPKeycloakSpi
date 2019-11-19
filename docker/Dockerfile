@@ -1,20 +1,9 @@
 # Run like this:
 # docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e DB_DATABASE=kcdb -e DB_USERNAME=kcuser -e DB_PASSWORD=kcpassword -e DB_PORT=3306 -e DB_ADDR=localhost dmadk/keycloak-mysql-mc-ha:latest
 #
-FROM jboss/keycloak:7.0.1
+FROM jboss/keycloak:8.0.0
 
-# Change the standalone.xml to support https-proxy-forwarding and include custom SPI settings
-#ADD proxy-forward.xslt /opt/jboss/keycloak/
-#RUN java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone.xml; \
-#	java -jar /usr/share/java/saxon.jar -s:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml -xsl:/opt/jboss/keycloak/proxy-forward.xslt -o:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml; \
-#	rm /opt/jboss/keycloak/proxy-forward.xslt
-# Overwrite the standard entrypoint file and set host ip and hostname to env variables
 ADD docker-entrypoint.sh /opt/jboss/tools/
-
-#ADD JDBC_PING.cli /opt/jboss/tools/cli/jgroups/discovery/
-
-# Overwrite module conf for jgroup to include mysql driver as dependency
-#ADD module.xml keycloak/modules/system/layers/base/org/jgroups/main/module.xml
 
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
