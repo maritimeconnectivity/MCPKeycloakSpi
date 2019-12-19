@@ -219,7 +219,7 @@ if [ "$DB_VENDOR" != "h2" ]; then
     /bin/sh /opt/jboss/tools/databases/change-database.sh $DB_VENDOR
 fi
 
-if [ -z "$JGROUPS_DISCOVERY_EXTERNAL_IP" ]; then
+if [[ -z ${JGROUPS_DISCOVERY_EXTERNAL_IP:-} ]]; then
     # this is only relevant when container is running in AWS ECS
     export JGROUPS_DISCOVERY_EXTERNAL_IP=$(curl -s 169.254.169.254/latest/meta-data/local-ipv4)
 fi
@@ -235,5 +235,5 @@ fi
 # Start Keycloak #
 ##################
 
-exec /opt/jboss/keycloak/bin/standalone.sh $SYS_PROPS $@ -Dkeycloak.profile.feature.scripts=enabled ​-Dkeycloak.profile.feature.upload_scripts=enabled
+exec /opt/jboss/keycloak/bin/standalone.sh $SYS_PROPS -Dkeycloak.profile.feature.scripts=enabled -Dkeycloak.profile.feature.upload_scripts=enabled $@
 exit $?
