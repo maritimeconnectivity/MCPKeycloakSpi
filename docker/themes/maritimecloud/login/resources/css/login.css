@@ -1,6 +1,10 @@
-.login-pf body {
-    background: #ffffff url("../img/TheMaritimeCloud_orange_no_img_narrow.jpg") top center no-repeat;
+.login-pf {
+    background: #ffffff url("../img/TheMaritimeCloud_orange_no_img_narrow.jpg") no-repeat center top;
     /*background-size: cover;*/
+}
+
+.login-pf body {
+    background: #ffffff url("../img/TheMaritimeCloud_orange_no_img_narrow.jpg") no-repeat center top;
 }
 
 .alert-error {
