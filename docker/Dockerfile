@@ -1,7 +1,7 @@
 # Run like this:
 # docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e DB_DATABASE=kcdb -e DB_USERNAME=kcuser -e DB_PASSWORD=kcpassword -e DB_PORT=3306 -e DB_ADDR=localhost dmadk/keycloak-mysql-mc-ha:latest
 #
-FROM jboss/keycloak:8.0.2
+FROM jboss/keycloak:9.0.0
 
 ADD docker-entrypoint.sh /opt/jboss/tools/
 
@@ -35,6 +35,6 @@ ENV PROXY_ADDRESS_FORWARDING true
 ENV MC_IDREG_SERVER_ROOT https://localhost
 ENV SYNC_KEYSTORE_PATH /mc-eventprovider-conf/idbroker-updater.jks
 ENV SYNC_KEYSTORE_PASSWORD changeit
-ENV SYNC_TRUSTSTORE_PATH /mc-eventprovider-conf/mc-truststore.jks
-ENV SYNC_TRUSTSTORE_PASSWORD changeit
+#ENV SYNC_TRUSTSTORE_PATH /mc-eventprovider-conf/mc-truststore.jks
+#ENV SYNC_TRUSTSTORE_PASSWORD changeit
 ENV NOSYNC_IDPS certificates,projecttestusers
