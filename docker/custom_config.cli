@@ -1,0 +1,17 @@
+embed-server --server-config=standalone-ha.xml --std-out=echo
+
+echo "Setting custom SPI"
+
+batch
+
+/subsystem=keycloak-server/spi=eventsListener/:add
+/subsystem=keycloak-server/spi=eventsListener/provider=mc-event-listener/:add(enabled=true)
+/subsystem=keycloak-server/spi=eventsListener/provider=mc-event-listener/:write-attribute(name=properties,value={"server-root" => "${env.MC_IDREG_SERVER_ROOT:https://localhost}", "keystore-path" => "${env.SYNC_KEYSTORE_PATH:/mc-eventprovider-conf/idbroker-updater.jks}", "keystore-password" => "${env.SYNC_KEYSTORE_PASSWORD:changeit}", "truststore-path" => "${env.SYNC_TRUSTSTORE_PATH}", "truststore-password" => "${env.SYNC_TRUSTSTORE_PASSWORD}", "idp-not-to-sync" => "${env.NOSYNC_IDPS:certificates,projecttestusers}"})
+
+/subsystem=keycloak-server/spi=authenticator/:add
+/subsystem=keycloak-server/spi=authenticator/provider=certificate/:add(enabled=true)
+/subsystem=keycloak-server/spi=idp-update-no-promt/provider=certificate/:add(enabled=true)
+
+run-batch
+
+stop-embedded-server

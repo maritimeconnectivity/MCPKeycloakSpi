@@ -5,6 +5,8 @@ FROM jboss/keycloak:9.0.0
 
 ADD docker-entrypoint.sh /opt/jboss/tools/
 
+ADD custom_config.cli /opt/jboss/startup-scripts/
+
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
 
@@ -35,6 +37,6 @@ ENV PROXY_ADDRESS_FORWARDING true
 ENV MC_IDREG_SERVER_ROOT https://localhost
 ENV SYNC_KEYSTORE_PATH /mc-eventprovider-conf/idbroker-updater.jks
 ENV SYNC_KEYSTORE_PASSWORD changeit
-#ENV SYNC_TRUSTSTORE_PATH /mc-eventprovider-conf/mc-truststore.jks
-#ENV SYNC_TRUSTSTORE_PASSWORD changeit
+ENV SYNC_TRUSTSTORE_PATH ""
+ENV SYNC_TRUSTSTORE_PASSWORD ""
 ENV NOSYNC_IDPS certificates,projecttestusers
