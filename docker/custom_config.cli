@@ -10,7 +10,6 @@ batch
 
 /subsystem=keycloak-server/spi=authenticator/:add
 /subsystem=keycloak-server/spi=authenticator/provider=certificate/:add(enabled=true)
-/subsystem=keycloak-server/spi=idp-update-no-promt/provider=certificate/:add(enabled=true)
 
 run-batch
 
