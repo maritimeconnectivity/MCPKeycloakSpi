@@ -14,7 +14,7 @@ services:
 
 install:
     # Build the spring boot app and copy the result to the docker folder
-    - mvn -U clean install && cp target/mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar docker/
+    - mvn -U clean install && cp target/mcp-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar docker/
 
 before_script:  
     - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
