@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.keycloak.spi.eventprovider;
+package net.maritimeconnectivity.identityregistry.keycloak.spi.eventprovider;
 
 import org.keycloak.Config.Scope;
 import org.keycloak.events.EventListenerProvider;

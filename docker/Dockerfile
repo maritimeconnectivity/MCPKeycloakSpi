@@ -21,7 +21,7 @@ USER root
 RUN mkdir -p /mc-eventprovider-conf
 
 USER jboss
-ADD mc-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar /opt/jboss/keycloak/providers/
+ADD mcp-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar /opt/jboss/keycloak/providers/
 
 # Overwrite the standard CMD
 CMD ["-c", "standalone-ha.xml"]

@@ -12,10 +12,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.keycloak.spi.authenticators.certificate;
+package net.maritimeconnectivity.identityregistry.keycloak.spi.authenticators.certificate;
 
-import net.maritimecloud.pki.CertificateHandler;
-import net.maritimecloud.pki.PKIIdentity;
+import net.maritimeconnectivity.pki.CertificateHandler;
+import net.maritimeconnectivity.pki.PKIIdentity;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationFlowContext;
