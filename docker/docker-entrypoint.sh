@@ -219,13 +219,15 @@ if [ "$DB_VENDOR" != "h2" ]; then
     /bin/sh /opt/jboss/tools/databases/change-database.sh $DB_VENDOR
 fi
 
-# this is only relevant when container is running in AWS ECS
-TEMP=$(curl -s 169.254.169.254/latest/meta-data/local-ipv4)
-if [[ $? -eq 0 && -z ${JGROUPS_DISCOVERY_EXTERNAL_IP:-} ]]; then
+if [[ -z ${JGROUPS_DISCOVERY_EXTERNAL_IP:-} ]]; then
     # this is only relevant when container is running in AWS ECS
-    export JGROUPS_DISCOVERY_EXTERNAL_IP=${TEMP}
+    TEMP=$(curl -s 169.254.169.254/latest/meta-data/local-ipv4)
+    if [[ $? -eq 0 ]]; then
+        # this is only relevant when container is running in AWS ECS
+        export JGROUPS_DISCOVERY_EXTERNAL_IP=${TEMP}
+    fi
 fi
-echo "External IP ${JGROUPS_DISCOVERY_EXTERNAL_IP}"
+echo "External IP is ${JGROUPS_DISCOVERY_EXTERNAL_IP}"
 
 /opt/jboss/tools/x509.sh
 /opt/jboss/tools/jgroups.sh
