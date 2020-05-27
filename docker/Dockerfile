@@ -41,4 +41,4 @@ ENV SYNC_KEYSTORE_PATH /mc-eventprovider-conf/idbroker-updater.jks
 ENV SYNC_KEYSTORE_PASSWORD changeit
 ENV SYNC_TRUSTSTORE_PATH ""
 ENV SYNC_TRUSTSTORE_PASSWORD ""
-ENV NOSYNC_IDPS certificates,projecttestusers
+ENV NOSYNC_IDPS certificates,users
