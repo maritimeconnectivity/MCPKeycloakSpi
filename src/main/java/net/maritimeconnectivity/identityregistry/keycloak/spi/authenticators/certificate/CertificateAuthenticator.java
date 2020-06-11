@@ -110,7 +110,6 @@ public class CertificateAuthenticator implements Authenticator {
 
             authenticationFlowContext.setUser(federatedUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
-            authenticationFlowContext.success();
         } else {
             log.infof("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
@@ -144,9 +143,9 @@ public class CertificateAuthenticator implements Authenticator {
 
             authenticationFlowContext.setUser(existingUser);
             //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
-            authenticationFlowContext.success();
         }
-        log.info("Authentication flow succesfully completed!");
+        authenticationFlowContext.success();
+        log.info("Authentication flow successfully completed!");
     }
 
     @Override
