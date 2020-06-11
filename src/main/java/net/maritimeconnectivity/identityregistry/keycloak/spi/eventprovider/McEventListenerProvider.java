@@ -323,8 +323,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             throw new RuntimeException(e);
         }
         byte[] bytes = os.toByteArray();
-        String data = new String(bytes);
-        return data;
+        return new String(bytes);
     }
 
     protected CloseableHttpClient buildHttpClient() {
@@ -375,10 +374,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             throw new RuntimeException(e);
         }
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new NoopHostnameVerifier());
-        CloseableHttpClient httpclient = HttpClients.custom()
-                                                    .setSSLSocketFactory(sslsf)
-                                                    .build();
-        return httpclient;
+        return HttpClients.custom().setSSLSocketFactory(sslsf).build();
     }
 
     public void onEvent(AdminEvent event, boolean includeRepresentation) {

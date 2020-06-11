@@ -46,8 +46,7 @@ public class McEventListenerProviderFactory implements EventListenerProviderFact
     }
 
     public void close() {
-        // TODO Auto-generated method stub
-        
+        // empty
     }
 
     public EventListenerProvider create(KeycloakSession session) {
@@ -55,7 +54,6 @@ public class McEventListenerProviderFactory implements EventListenerProviderFact
     }
 
     public void postInit(KeycloakSessionFactory arg0) {
-        // TODO Auto-generated method stub
-        
+        // empty
     }
 }

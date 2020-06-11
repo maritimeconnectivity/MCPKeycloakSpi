@@ -14,6 +14,7 @@
  */
 package net.maritimeconnectivity.identityregistry.keycloak.spi.authenticators.certificate;
 
+import lombok.NoArgsConstructor;
 import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.PKIIdentity;
 import org.jboss.logging.Logger;
@@ -27,16 +28,14 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@NoArgsConstructor
 public class CertificateAuthenticator implements Authenticator {
 
     private static final Logger log = Logger.getLogger(CertificateAuthenticator.class);
-
-    public CertificateAuthenticator() {
-    }
 
     /**
      * Converts the certificate in the header to a Keycloak User.
@@ -95,17 +94,17 @@ public class CertificateAuthenticator implements Authenticator {
 
             log.info("About to set permissions attr to: " + user.getPermissions());
             if (permissions != null && !permissions.trim().isEmpty()) {
-                federatedUser.setAttribute("permissions", Arrays.asList(permissions));
+                federatedUser.setAttribute("permissions", Collections.singletonList(permissions));
                 log.info("Just set permissions attr to: " + permissions);
             }
             log.info("About to set mrn attr to: " + mrn);
-            if (mrn != null && !mrn.trim().isEmpty()) {
-                federatedUser.setAttribute("mrn", Arrays.asList(mrn));
+            if (!mrn.trim().isEmpty()) {
+                federatedUser.setAttribute("mrn", Collections.singletonList(mrn));
                 log.info("Just set mrn attr to: " + mrn);
             }
             log.info("About to set org attr to: " + orgMrn);
-            if (orgMrn != null && !orgMrn.trim().isEmpty()) {
-                federatedUser.setAttribute("org", Arrays.asList(orgMrn));
+            if (!orgMrn.trim().isEmpty()) {
+                federatedUser.setAttribute("org", Collections.singletonList(orgMrn));
                 log.info("Just set org attr to: " + orgMrn);
             }
 
@@ -129,17 +128,17 @@ public class CertificateAuthenticator implements Authenticator {
             }
             log.info("About to set permissions attr to: " + permissions);
             if (permissions != null && !permissions.trim().isEmpty()) {
-                existingUser.setAttribute("permissions", Arrays.asList(permissions));
+                existingUser.setAttribute("permissions", Collections.singletonList(permissions));
                 log.info("Just set permissions attr to: " + permissions);
             }
             log.info("About to set mrn attr to: " + mrn);
-            if (mrn != null && !mrn.trim().isEmpty()) {
-                existingUser.setAttribute("mrn", Arrays.asList(mrn));
+            if (!mrn.trim().isEmpty()) {
+                existingUser.setAttribute("mrn", Collections.singletonList(mrn));
                 log.info("Just set mrn attr to: " + mrn);
             }
             log.info("About to set org attr to: " + orgMrn);
-            if (orgMrn != null && !orgMrn.trim().isEmpty()) {
-                existingUser.setAttribute("org", Arrays.asList(orgMrn));
+            if (!orgMrn.trim().isEmpty()) {
+                existingUser.setAttribute("org", Collections.singletonList(orgMrn));
                 log.info("Just set org attr to: " + orgMrn);
             }
 
@@ -152,7 +151,7 @@ public class CertificateAuthenticator implements Authenticator {
 
     @Override
     public void action(AuthenticationFlowContext authenticationFlowContext) {
-
+        // empty
     }
 
     @Override
@@ -173,6 +172,6 @@ public class CertificateAuthenticator implements Authenticator {
 
     @Override
     public void close() {
-
+        // empty
     }
 }

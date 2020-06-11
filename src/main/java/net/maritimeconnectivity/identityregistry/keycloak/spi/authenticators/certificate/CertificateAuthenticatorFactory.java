@@ -29,29 +29,29 @@ import org.keycloak.provider.ProviderConfigProperty;
 public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "certificate";
-    static CertificateAuthenticator SINGLETON = null;
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    static CertificateAuthenticator singleton = null;
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return SINGLETON;
+        return singleton;
     }
 
     @Override
     public void init(Config.Scope config) {
-        if (SINGLETON == null) {
-            SINGLETON = new CertificateAuthenticator();
+        if (singleton == null) {
+            singleton = new CertificateAuthenticator();
         }
     }
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
-
+        // empty
     }
 
     @Override
     public void close() {
-
+        // empty
     }
 
     @Override
@@ -61,7 +61,7 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public String getReferenceCategory() {
-        return "certificate";
+        return PROVIDER_ID;
     }
 
     @Override
