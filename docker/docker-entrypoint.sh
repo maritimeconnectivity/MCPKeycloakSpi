@@ -240,5 +240,5 @@ echo "External IP is ${JGROUPS_DISCOVERY_EXTERNAL_IP}"
 # Start Keycloak #
 ##################
 
-exec /opt/jboss/keycloak/bin/standalone.sh $SYS_PROPS -Dkeycloak.profile.feature.scripts=enabled -Dkeycloak.profile.feature.upload_scripts=enabled $@
+exec /opt/jboss/keycloak/bin/standalone.sh $SYS_PROPS -Dkeycloak.profile.feature.scripts=enabled -Dkeycloak.profile.feature.upload_scripts=enabled -Djgroups.external_addr=$JGROUPS_DISCOVERY_EXTERNAL_IP $@
 exit $?

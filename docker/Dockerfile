@@ -1,13 +1,11 @@
 # Run like this:
 # docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e DB_DATABASE=kcdb -e DB_USERNAME=kcuser -e DB_PASSWORD=kcpassword -e DB_PORT=3306 -e DB_ADDR=localhost dmadk/keycloak-mysql-mc-ha:latest
 #
-FROM jboss/keycloak:9.0.0
+FROM jboss/keycloak:11.0.0
 
 ADD docker-entrypoint.sh /opt/jboss/tools/
 
 ADD custom_config.cli /opt/jboss/startup-scripts/
-
-ADD JDBC_PING.cli /opt/jboss/tools/cli/jgroups/discovery/
 
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
