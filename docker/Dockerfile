@@ -7,8 +7,6 @@ ADD docker-entrypoint.sh /opt/jboss/tools/
 
 ADD custom_config.cli /opt/jboss/startup-scripts/
 
-ADD JDBC_PING.cli /opt/jboss/tools/cli/jgroups/discovery/
-
 # Add the maritime cloud theme
 ADD themes /opt/jboss/keycloak/themes/
 
