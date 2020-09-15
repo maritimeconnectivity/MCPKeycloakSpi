@@ -4,6 +4,8 @@
 
 Keycloak has a series of Service Provider Interfaces (SPI) that allows for adding new functionality where needed. For Keycloak to work in as the MCP Identity Broker the SPI mentioned below has been implemented.
 
+For setup please refer to the [MIR deployment guidelines](https://github.com/MaritimeConnectivityPlatform/IdentityRegistry/blob/master/setup/guide/MIR_setup.pdf) as well as the information below. 
+
 ## MCP Event Listener
 This is an implementation of a Keycloak EventListener, implementing the EventListener SPI as described [here](https://keycloak.gitbooks.io/documentation/server_development/topics/providers.html).
 
