@@ -17,12 +17,12 @@ install:
     - mvn -U clean install && cp target/mcp-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar docker/
 
 before_script:  
-    - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+    - echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USERNAME" --password-stdin
 
 script:
     # Build the docker image
     - docker build --no-cache -t dmadk/keycloak-mysql-mc-ha docker
     # Push the image to the repository
-    - docker push dmadk/keycloak-mysql-mc-ha
+    - docker push dmadk/keycloak-mysql-mc-ha:latest
     # Remember to logout of docker
     - docker logout
