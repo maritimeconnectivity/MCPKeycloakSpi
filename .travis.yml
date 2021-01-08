@@ -17,7 +17,7 @@ install:
     - mvn -U clean install && cp target/mcp-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar docker/
 
 before_script:  
-    - echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USERNAME" --password-stdin
+    - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 script:
     # Build the docker image
