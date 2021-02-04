@@ -126,10 +126,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             // check that it is actually a user
             if (user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                userRoles = getUserRoles(user.getUsername());
-                user.setAttribute("roles", userRoles);
-                actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
-                user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
             }
         }
 
@@ -198,19 +195,26 @@ public class McEventListenerProvider implements EventListenerProvider {
             // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
             if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                userRoles = getUserRoles(user.getUsername());
-                user.setAttribute("roles", userRoles);
-                actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
-                user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
             }
         }
     }
 
-    protected List<String> getUserRoles(String userMrn) {
+    protected void getUserRolesAndActingOnBehalfOf(List<String> userRoles, List<String> actingOnBehalfOf, UserModel user) {
+        try (CloseableHttpClient client = buildHttpClient()) {
+            userRoles.addAll(getUserRoles(user.getUsername(), client));
+            user.setAttribute("roles", userRoles);
+            actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername(), client));
+            user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+        } catch (IOException e) {
+            log.error("HTTP client could not be closed", e);
+        }
+    }
+
+    protected List<String> getUserRoles(String userMrn, CloseableHttpClient client) {
         if (serverRoot != null) {
-            CloseableHttpClient client = buildHttpClient();
             if (client == null) {
-                log.error("Could not get build http client to get user roles");
+                log.error("Could not build http client to get user roles");
                 return new ArrayList<>();
             }
             String uri = serverRoot + "/service/" + userMrn + "/roles";
@@ -237,9 +241,8 @@ public class McEventListenerProvider implements EventListenerProvider {
         return new ArrayList<>();
     }
 
-    protected List<String> getActingOnBehalfOf(String userMrn) {
+    protected List<String> getActingOnBehalfOf(String userMrn, CloseableHttpClient client) {
         if (serverRoot != null) {
-            CloseableHttpClient client = buildHttpClient();
             if (client == null) {
                 log.error("Could not build http client");
                 return new ArrayList<>();
@@ -322,14 +325,13 @@ public class McEventListenerProvider implements EventListenerProvider {
             log.error("Could not get content", e);
             throw new RuntimeException(e);
         }
-        byte[] bytes = os.toByteArray();
-        return new String(bytes);
+        return os.toString();
     }
 
     protected CloseableHttpClient buildHttpClient() {
         log.info("keystore path: " + keystorePath);
         log.info("truststorePath path: " + truststorePath);
-        KeyStore keyStore = null;
+        KeyStore keyStore;
         KeyStore trustStore = null;
         FileInputStream instreamKeystore = null;
         FileInputStream instreamTruststore = null;
