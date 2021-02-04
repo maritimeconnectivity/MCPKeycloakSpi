@@ -158,6 +158,7 @@ class McEventListenerProviderTest {
 
         // Make sure the sendUserUpdate method does nothing
         doNothing().when(mcEventListenerProvider).sendUserUpdate(any(), any(), any(), any());
+        doNothing().when(mcEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any());
 
         // Call onEvent
         mcEventListenerProvider.onEvent(this.mockedEvent);
