@@ -124,7 +124,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             realm = session.realms().getRealm(event.getRealmId());
             user = session.users().getUserById(event.getUserId(), realm);
             // check that it is actually a user
-            if (user.getUsername().contains(":user:")) {
+            if (user != null && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
                 getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
             }
@@ -144,7 +144,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             return;
         }
 
-        if (event.getRealmId() != null && event.getUserId() != null) {
+        if (event.getRealmId() != null && event.getUserId() != null && user != null) {
             User mcUser = new User();
             mcUser.setEmail(user.getEmail());
             mcUser.setFirstName(user.getFirstName());

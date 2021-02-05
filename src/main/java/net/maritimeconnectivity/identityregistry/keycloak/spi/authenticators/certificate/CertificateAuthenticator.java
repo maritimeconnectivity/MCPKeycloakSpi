@@ -107,9 +107,9 @@ public class CertificateAuthenticator implements Authenticator {
                 federatedUser.setAttribute("org", Collections.singletonList(orgMrn));
                 log.info("Just set org attr to: " + orgMrn);
             }
+            extractNonUserAttributes(user, mrn, federatedUser);
 
             authenticationFlowContext.setUser(federatedUser);
-            //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
         } else {
             log.infof("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
@@ -140,12 +140,58 @@ public class CertificateAuthenticator implements Authenticator {
                 existingUser.setAttribute("org", Collections.singletonList(orgMrn));
                 log.info("Just set org attr to: " + orgMrn);
             }
+            extractNonUserAttributes(user, mrn, existingUser);
 
             authenticationFlowContext.setUser(existingUser);
-            //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
         }
         authenticationFlowContext.success();
         log.info("Authentication flow successfully completed!");
+    }
+
+    private void extractNonUserAttributes(PKIIdentity user, String mrn, UserModel userModel) {
+        if (!mrn.trim().contains(":user:")) {
+            String flagState = user.getFlagState();
+            String callSign = user.getCallSign();
+            String imoNumber = user.getImoNumber();
+            String mmsiNumber = user.getMmsiNumber();
+            String aisShipType = user.getAisShipType();
+            String portOfRegister = user.getPortOfRegister();
+            String shipMrn = user.getShipMrn();
+            String mrnSubsidiary = user.getMrnSubsidiary();
+            String homeMmsUrl = user.getHomeMmsUrl();
+            String url = user.getUrl();
+
+            if (flagState != null && !flagState.trim().isEmpty()) {
+                userModel.setAttribute("flagState", Collections.singletonList(flagState));
+            }
+            if (callSign != null && !callSign.trim().isEmpty()) {
+                userModel.setAttribute("callSign", Collections.singletonList(callSign));
+            }
+            if (imoNumber != null && !imoNumber.trim().isEmpty()) {
+                userModel.setAttribute("imoNumber", Collections.singletonList(imoNumber));
+            }
+            if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
+                userModel.setAttribute("mmsiNumber", Collections.singletonList(mmsiNumber));
+            }
+            if (aisShipType != null && aisShipType.trim().isEmpty()) {
+                userModel.setAttribute("aisShipType", Collections.singletonList(aisShipType));
+            }
+            if (portOfRegister != null && !portOfRegister.trim().isEmpty()) {
+                userModel.setAttribute("portOfRegister", Collections.singletonList(portOfRegister));
+            }
+            if (shipMrn != null && !shipMrn.trim().isEmpty()) {
+                userModel.setAttribute("shipMrn", Collections.singletonList(shipMrn));
+            }
+            if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
+                userModel.setAttribute("mrnSubsidiary", Collections.singletonList(mrnSubsidiary));
+            }
+            if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
+                userModel.setAttribute("homeMmsUrl", Collections.singletonList(homeMmsUrl));
+            }
+            if (url != null && !url.trim().isEmpty()) {
+                userModel.setAttribute("url", Collections.singletonList(url));
+            }
+        }
     }
 
     @Override
