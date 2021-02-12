@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -147,9 +148,9 @@ class CertificateAuthenticatorTest {
      * Test the authentication fails if the certificate is incomplete
      */
     @Test
-    public void testAuthenticateIncompleteCert() throws Exception {
+    public void testAuthenticateIncompleteCert() {
         // "Inject" the missing certificate in the mocked httpheaders
-        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Arrays.asList("ASDFGHJKJHGFDSASDFGHJKL"));
+        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList("ASDFGHJKJHGFDSASDFGHJKL"));
 
         // Run the authenticator and expect an exception
         Throwable exception = assertThrows(AuthenticationFlowException.class, () -> {
