@@ -168,31 +168,31 @@ public class CertificateAuthenticator implements Authenticator {
             String url = user.getUrl();
 
             if (flagState != null && !flagState.trim().isEmpty()) {
-                userModel.setAttribute("flagState", Collections.singletonList(flagState));
+                userModel.setAttribute("flagstate", Collections.singletonList(flagState));
             }
             if (callSign != null && !callSign.trim().isEmpty()) {
-                userModel.setAttribute("callSign", Collections.singletonList(callSign));
+                userModel.setAttribute("callsign", Collections.singletonList(callSign));
             }
             if (imoNumber != null && !imoNumber.trim().isEmpty()) {
-                userModel.setAttribute("imoNumber", Collections.singletonList(imoNumber));
+                userModel.setAttribute("imo_number", Collections.singletonList(imoNumber));
             }
             if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
-                userModel.setAttribute("mmsiNumber", Collections.singletonList(mmsiNumber));
+                userModel.setAttribute("mmsi_number", Collections.singletonList(mmsiNumber));
             }
             if (aisShipType != null && aisShipType.trim().isEmpty()) {
-                userModel.setAttribute("aisShipType", Collections.singletonList(aisShipType));
+                userModel.setAttribute("ais_type", Collections.singletonList(aisShipType));
             }
             if (portOfRegister != null && !portOfRegister.trim().isEmpty()) {
-                userModel.setAttribute("portOfRegister", Collections.singletonList(portOfRegister));
+                userModel.setAttribute("registered_port", Collections.singletonList(portOfRegister));
             }
             if (shipMrn != null && !shipMrn.trim().isEmpty()) {
-                userModel.setAttribute("shipMrn", Collections.singletonList(shipMrn));
+                userModel.setAttribute("vessel_mrn", Collections.singletonList(shipMrn));
             }
             if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
-                userModel.setAttribute("mrnSubsidiary", Collections.singletonList(mrnSubsidiary));
+                userModel.setAttribute("subsidiary_mrn", Collections.singletonList(mrnSubsidiary));
             }
             if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
-                userModel.setAttribute("homeMmsUrl", Collections.singletonList(homeMmsUrl));
+                userModel.setAttribute("mms_url", Collections.singletonList(homeMmsUrl));
             }
             if (url != null && !url.trim().isEmpty()) {
                 userModel.setAttribute("url", Collections.singletonList(url));
