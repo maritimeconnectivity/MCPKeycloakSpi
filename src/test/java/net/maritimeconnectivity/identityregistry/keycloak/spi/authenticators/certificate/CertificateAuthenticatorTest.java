@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -86,7 +87,7 @@ class CertificateAuthenticatorTest {
         // Load the nginx
         String nginxFormatedPemCert = loadTxtFile("src/test/resources/thc-cert-nginx-format.pem");
         // "Inject" the certificate in the mocked httpheaders
-        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Arrays.asList(nginxFormatedPemCert));
+        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList(nginxFormatedPemCert));
         // Set the mocked UserProvide to return null when looking for existing user - this should trigger creation of new user
         given(this.mockedUserProvider.getUserByUsername(any(), any())).willReturn(null);
         // Create a mocked UserModel that is returned when creating the new user.
@@ -100,8 +101,8 @@ class CertificateAuthenticatorTest {
         verify(mockedUserModel, times(1)).setEnabled(true);
         verify(mockedUserModel, times(1)).setFirstName("Thomas");
         verify(mockedUserModel, times(1)).setLastName("Christensen");
-        verify(mockedUserModel, times(1)).setAttribute("permissions", Arrays.asList("NONE"));
-        verify(mockedUserModel, times(1)).setAttribute("mrn", Arrays.asList("urn:mrn:mcl:user:dma:thc"));
+        verify(mockedUserModel, times(1)).setAttribute("permissions", Collections.singletonList("NONE"));
+        verify(mockedUserModel, times(1)).setAttribute("mrn", Collections.singletonList("urn:mrn:mcl:user:dma:thc"));
     }
 
 
@@ -113,7 +114,7 @@ class CertificateAuthenticatorTest {
         // Load the nginx
         String nginxFormatedPemCert = loadTxtFile("src/test/resources/thc-cert-nginx-format.pem");
         // "Inject" the certificate in the mocked httpheaders
-        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Arrays.asList(nginxFormatedPemCert));
+        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList(nginxFormatedPemCert));
         // Create a mocked UserModel that is returned when looking for existing user
         UserModel mockedUserModel = mock(UserModel.class);
         given(this.mockedUserProvider.getUserByUsername(any(), any())).willReturn(mockedUserModel);
@@ -124,8 +125,8 @@ class CertificateAuthenticatorTest {
         // Verify that the user has been updated correctly
         verify(mockedUserModel, times(1)).setFirstName("Thomas");
         verify(mockedUserModel, times(1)).setLastName("Christensen");
-        verify(mockedUserModel, times(1)).setAttribute("permissions", Arrays.asList("NONE"));
-        verify(mockedUserModel, times(1)).setAttribute("mrn", Arrays.asList("urn:mrn:mcl:user:dma:thc"));
+        verify(mockedUserModel, times(1)).setAttribute("permissions", Collections.singletonList("NONE"));
+        verify(mockedUserModel, times(1)).setAttribute("mrn", Collections.singletonList("urn:mrn:mcl:user:dma:thc"));
     }
 
     /**
@@ -134,7 +135,7 @@ class CertificateAuthenticatorTest {
     @Test
     public void testAuthenticateNoCert() throws Exception {
         // "Inject" the missing certificate in the mocked httpheaders
-        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Arrays.asList());
+        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.emptyList());
 
         // Run the authenticator and expect an exception
         Throwable exception = assertThrows(AuthenticationFlowException.class, () -> {
@@ -147,9 +148,9 @@ class CertificateAuthenticatorTest {
      * Test the authentication fails if the certificate is incomplete
      */
     @Test
-    public void testAuthenticateIncompleteCert() throws Exception {
+    public void testAuthenticateIncompleteCert() {
         // "Inject" the missing certificate in the mocked httpheaders
-        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Arrays.asList("ASDFGHJKJHGFDSASDFGHJKL"));
+        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList("ASDFGHJKJHGFDSASDFGHJKL"));
 
         // Run the authenticator and expect an exception
         Throwable exception = assertThrows(AuthenticationFlowException.class, () -> {

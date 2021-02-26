@@ -14,6 +14,8 @@
  */
 package net.maritimeconnectivity.identityregistry.keycloak.spi.eventprovider;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import net.maritimeconnectivity.identityregistry.keycloak.spi.exceptions.McpException;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -61,13 +63,15 @@ public class McEventListenerProvider implements EventListenerProvider {
 
     public static final Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
-    private KeycloakSession session;
-    private String serverRoot;
-    private String keystorePath;
-    private String keystorePassword;
-    private String truststorePath;
-    private String truststorePassword;
-    private String[] idpNotToSync;
+    private final KeycloakSession session;
+    private final String serverRoot;
+    private final String keystorePath;
+    private final String keystorePassword;
+    private final String truststorePath;
+    private final String truststorePassword;
+    private final String[] idpNotToSync;
+
+    private final TypeReference<ArrayList<String>> arrayListTypeReference = new TypeReference<ArrayList<String>>() {};
 
     public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
         this.session = session;
@@ -79,11 +83,13 @@ public class McEventListenerProvider implements EventListenerProvider {
         this.idpNotToSync = idpNotToSync;
     }
 
+    @Override
     public void close() {
         // not needed
         
     }
 
+    @Override
     public void onEvent(Event event) {
         // We only worry about LOGIN events.
         if (event.getType() != EventType.LOGIN) {
@@ -124,12 +130,9 @@ public class McEventListenerProvider implements EventListenerProvider {
             realm = session.realms().getRealm(event.getRealmId());
             user = session.users().getUserById(event.getUserId(), realm);
             // check that it is actually a user
-            if (user.getUsername().contains(":user:")) {
+            if (user != null && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                userRoles = getUserRoles(user.getUsername());
-                user.setAttribute("roles", userRoles);
-                actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
-                user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
             }
         }
 
@@ -147,7 +150,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             return;
         }
 
-        if (event.getRealmId() != null && event.getUserId() != null) {
+        if (event.getRealmId() != null && event.getUserId() != null && user != null) {
             User mcUser = new User();
             mcUser.setEmail(user.getEmail());
             mcUser.setFirstName(user.getFirstName());
@@ -198,19 +201,26 @@ public class McEventListenerProvider implements EventListenerProvider {
             // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
             if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                userRoles = getUserRoles(user.getUsername());
-                user.setAttribute("roles", userRoles);
-                actingOnBehalfOf = getActingOnBehalfOf(user.getUsername());
-                user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
             }
         }
     }
 
-    protected List<String> getUserRoles(String userMrn) {
+    protected void getUserRolesAndActingOnBehalfOf(List<String> userRoles, List<String> actingOnBehalfOf, UserModel user) {
+        try (CloseableHttpClient httpClient = buildHttpClient()) {
+            userRoles.addAll(getUserRoles(user.getUsername(), httpClient));
+            user.setAttribute("roles", userRoles);
+            actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername(), httpClient));
+            user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
+        } catch (IOException e) {
+            log.error("HTTP client could not be closed", e);
+        }
+    }
+
+    protected List<String> getUserRoles(String userMrn, CloseableHttpClient client) {
         if (serverRoot != null) {
-            CloseableHttpClient client = buildHttpClient();
             if (client == null) {
-                log.error("Could not get build http client to get user roles");
+                log.error("Could not build http client to get user roles");
                 return new ArrayList<>();
             }
             String uri = serverRoot + "/service/" + userMrn + "/roles";
@@ -224,22 +234,21 @@ public class McEventListenerProvider implements EventListenerProvider {
                     log.error("Getting user roles failed");
                 } else {
                     String json = getContent(entity);
-                    List<String> roles = (ArrayList<String>) JsonSerialization.readValue(json, List.class);
+                    List<String> roles = JsonSerialization.readValue(json, arrayListTypeReference);
                     if (roles != null) {
                         return roles;
                     }
                 }
 
             } catch (IOException e) {
-                log.error("Threw exception", e);
+                log.error("Could not get user roles", e);
             }
         }
         return new ArrayList<>();
     }
 
-    protected List<String> getActingOnBehalfOf(String userMrn) {
+    protected List<String> getActingOnBehalfOf(String userMrn, CloseableHttpClient client) {
         if (serverRoot != null) {
-            CloseableHttpClient client = buildHttpClient();
             if (client == null) {
                 log.error("Could not build http client");
                 return new ArrayList<>();
@@ -255,13 +264,13 @@ public class McEventListenerProvider implements EventListenerProvider {
                     log.error("Getting acting on behalf of orgs failed");
                 } else {
                     String json = getContent(entity);
-                    List<String> orgs = (ArrayList<String>) JsonSerialization.readValue(json, List.class);
+                    List<String> orgs = JsonSerialization.readValue(json, arrayListTypeReference);
                     if (orgs != null) {
                         return orgs;
                     }
                 }
             } catch (IOException e) {
-                log.error("Threw exception", e);
+                log.error("Could not get acting on behalf of orgs", e);
             }
         }
         return new ArrayList<>();
@@ -301,7 +310,7 @@ public class McEventListenerProvider implements EventListenerProvider {
                 log.info("User sync'ed!");
             }
         } catch (IOException e) {
-            log.error("Threw exception", e);
+            log.error("Could not send user update request", e);
         } finally {
             try {
                 if (response != null) {
@@ -309,7 +318,7 @@ public class McEventListenerProvider implements EventListenerProvider {
                 }
                 client.close();
             } catch (IOException e) {
-                log.error("Threw exception", e);
+                log.error("Could not close user update response", e);
             }
         }
     }
@@ -320,16 +329,15 @@ public class McEventListenerProvider implements EventListenerProvider {
             entity.writeTo(os);
         } catch (IOException e) {
             log.error("Could not get content", e);
-            throw new RuntimeException(e);
+            throw new McpException(e);
         }
-        byte[] bytes = os.toByteArray();
-        return new String(bytes);
+        return os.toString();
     }
 
     protected CloseableHttpClient buildHttpClient() {
         log.info("keystore path: " + keystorePath);
         log.info("truststorePath path: " + truststorePath);
-        KeyStore keyStore = null;
+        KeyStore keyStore;
         KeyStore trustStore = null;
         FileInputStream instreamKeystore = null;
         FileInputStream instreamTruststore = null;
@@ -343,8 +351,8 @@ public class McEventListenerProvider implements EventListenerProvider {
                 trustStore.load(instreamTruststore, truststorePassword.toCharArray());
             }
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
-            log.error("Threw exception", e);
-            throw new RuntimeException(e);
+            log.error("Could not load keystore or truststore", e);
+            throw new McpException(e);
         } finally {
             try {
                 if (instreamKeystore != null) {
@@ -354,7 +362,7 @@ public class McEventListenerProvider implements EventListenerProvider {
                     instreamTruststore.close();
                 }
             } catch (IOException e) {
-                log.error("Threw exception", e);
+                log.error("Could not close keystore or truststore", e);
             }
         }
 
@@ -370,13 +378,14 @@ public class McEventListenerProvider implements EventListenerProvider {
             sslContextBuilder.loadKeyMaterial(keyStore, keystorePassword.toCharArray());
             sslcontext = sslContextBuilder.build();
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
-            log.error("Threw exception", e);
-            throw new RuntimeException(e);
+            log.error("Could not build ssl context", e);
+            throw new McpException(e);
         }
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new NoopHostnameVerifier());
         return HttpClients.custom().setSSLSocketFactory(sslsf).build();
     }
 
+    @Override
     public void onEvent(AdminEvent event, boolean includeRepresentation) {
         // not needed
         

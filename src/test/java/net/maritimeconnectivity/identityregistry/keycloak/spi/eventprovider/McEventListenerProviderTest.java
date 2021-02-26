@@ -25,6 +25,7 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,9 +146,9 @@ class McEventListenerProviderTest {
         given(this.mockedUserModel.getLastName()).willReturn("Christensen");
         given(this.mockedUserModel.getUsername()).willReturn("urn:mrn:mcl:user:dma:thc");
         Map<String, List<String>> attrs = new HashMap<>();
-        attrs.put("org", Arrays.asList("urn:mrn:mcl:org:dma"));
-        attrs.put("mrn", Arrays.asList("urn:mrn:mcl:user:dma:thc"));
-        attrs.put("permissions", Arrays.asList("NONE"));
+        attrs.put("org", Collections.singletonList("urn:mrn:mcl:org:dma"));
+        attrs.put("mrn", Collections.singletonList("urn:mrn:mcl:user:dma:thc"));
+        attrs.put("permissions", Collections.singletonList("NONE"));
         given(this.mockedUserModel.getAttributes()).willReturn(attrs);
 
         // Put "certificates" in the list of identity_providers that should be skipped.
@@ -158,6 +159,7 @@ class McEventListenerProviderTest {
 
         // Make sure the sendUserUpdate method does nothing
         doNothing().when(mcEventListenerProvider).sendUserUpdate(any(), any(), any(), any());
+        doNothing().when(mcEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any());
 
         // Call onEvent
         mcEventListenerProvider.onEvent(this.mockedEvent);

@@ -27,6 +27,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +54,12 @@ public class CertificateAuthenticator implements Authenticator {
             throw new AuthenticationFlowException("No client certificate detected!", AuthenticationFlowError.INVALID_USER);
         }
         // Convert the header string to a certificate
-        X509Certificate userCertificate = CertificateHandler.getCertFromNginxHeader(certStrList.get(0));
+        X509Certificate userCertificate = null;
+        try {
+            userCertificate = CertificateHandler.getCertFromNginxHeader(certStrList.get(0));
+        } catch (UnsupportedEncodingException e) {
+            log.error("Client certificate could not be parsed", e);
+        }
         if (userCertificate == null) {
             log.warn("Could not read client certificate!");
             throw new AuthenticationFlowException("Could not read client certificate!", AuthenticationFlowError.INVALID_USER);
@@ -107,9 +113,9 @@ public class CertificateAuthenticator implements Authenticator {
                 federatedUser.setAttribute("org", Collections.singletonList(orgMrn));
                 log.info("Just set org attr to: " + orgMrn);
             }
+            extractNonUserAttributes(user, mrn, federatedUser);
 
             authenticationFlowContext.setUser(federatedUser);
-            //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
         } else {
             log.infof("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
@@ -140,12 +146,58 @@ public class CertificateAuthenticator implements Authenticator {
                 existingUser.setAttribute("org", Collections.singletonList(orgMrn));
                 log.info("Just set org attr to: " + orgMrn);
             }
+            extractNonUserAttributes(user, mrn, existingUser);
 
             authenticationFlowContext.setUser(existingUser);
-            //context.getClientSession().setNote(BROKER_REGISTERED_NEW_USER, "true");
         }
         authenticationFlowContext.success();
         log.info("Authentication flow successfully completed!");
+    }
+
+    private void extractNonUserAttributes(PKIIdentity user, String mrn, UserModel userModel) {
+        if (!mrn.trim().contains(":user:")) {
+            String flagState = user.getFlagState();
+            String callSign = user.getCallSign();
+            String imoNumber = user.getImoNumber();
+            String mmsiNumber = user.getMmsiNumber();
+            String aisShipType = user.getAisShipType();
+            String portOfRegister = user.getPortOfRegister();
+            String shipMrn = user.getShipMrn();
+            String mrnSubsidiary = user.getMrnSubsidiary();
+            String homeMmsUrl = user.getHomeMmsUrl();
+            String url = user.getUrl();
+
+            if (flagState != null && !flagState.trim().isEmpty()) {
+                userModel.setAttribute("flagstate", Collections.singletonList(flagState));
+            }
+            if (callSign != null && !callSign.trim().isEmpty()) {
+                userModel.setAttribute("callsign", Collections.singletonList(callSign));
+            }
+            if (imoNumber != null && !imoNumber.trim().isEmpty()) {
+                userModel.setAttribute("imo_number", Collections.singletonList(imoNumber));
+            }
+            if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
+                userModel.setAttribute("mmsi_number", Collections.singletonList(mmsiNumber));
+            }
+            if (aisShipType != null && aisShipType.trim().isEmpty()) {
+                userModel.setAttribute("ais_type", Collections.singletonList(aisShipType));
+            }
+            if (portOfRegister != null && !portOfRegister.trim().isEmpty()) {
+                userModel.setAttribute("registered_port", Collections.singletonList(portOfRegister));
+            }
+            if (shipMrn != null && !shipMrn.trim().isEmpty()) {
+                userModel.setAttribute("vessel_mrn", Collections.singletonList(shipMrn));
+            }
+            if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
+                userModel.setAttribute("subsidiary_mrn", Collections.singletonList(mrnSubsidiary));
+            }
+            if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
+                userModel.setAttribute("mms_url", Collections.singletonList(homeMmsUrl));
+            }
+            if (url != null && !url.trim().isEmpty()) {
+                userModel.setAttribute("url", Collections.singletonList(url));
+            }
+        }
     }
 
     @Override
