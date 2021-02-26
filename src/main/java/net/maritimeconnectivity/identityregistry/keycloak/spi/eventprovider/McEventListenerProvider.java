@@ -207,10 +207,10 @@ public class McEventListenerProvider implements EventListenerProvider {
     }
 
     protected void getUserRolesAndActingOnBehalfOf(List<String> userRoles, List<String> actingOnBehalfOf, UserModel user) {
-        try (CloseableHttpClient client = buildHttpClient()) {
-            userRoles.addAll(getUserRoles(user.getUsername(), client));
+        try (CloseableHttpClient httpClient = buildHttpClient()) {
+            userRoles.addAll(getUserRoles(user.getUsername(), httpClient));
             user.setAttribute("roles", userRoles);
-            actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername(), client));
+            actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername(), httpClient));
             user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
         } catch (IOException e) {
             log.error("HTTP client could not be closed", e);
