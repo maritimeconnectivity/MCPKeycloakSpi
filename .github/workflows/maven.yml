@@ -34,6 +34,7 @@ jobs:
       if: ${{ github.event_name == 'push' }}
       uses: docker/build-push-action@v2.4.0
       with:
+        context: .
         file: docker/Dockerfile
         tags: dmadk/keycloak-mysql-mc-ha:latest
         push: true
