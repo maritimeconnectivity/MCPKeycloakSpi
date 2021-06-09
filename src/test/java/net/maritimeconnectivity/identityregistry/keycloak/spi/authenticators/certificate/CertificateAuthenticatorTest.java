@@ -25,18 +25,17 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 
 import javax.ws.rs.core.HttpHeaders;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -83,13 +82,13 @@ class CertificateAuthenticatorTest {
      * Test the authentication works when user does not already exists
      */
     @Test
-    public void testAuthenticateNewUser() throws Exception {
+    void testAuthenticateNewUser() throws Exception {
         // Load the nginx
         String nginxFormatedPemCert = loadTxtFile("src/test/resources/thc-cert-nginx-format.pem");
         // "Inject" the certificate in the mocked httpheaders
         given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList(nginxFormatedPemCert));
         // Set the mocked UserProvide to return null when looking for existing user - this should trigger creation of new user
-        given(this.mockedUserProvider.getUserByUsername(any(), any())).willReturn(null);
+        given(this.mockedUserProvider.getUserByUsername(any(RealmModel.class), any(String.class))).willReturn(null);
         // Create a mocked UserModel that is returned when creating the new user.
         UserModel mockedUserModel = mock(UserModel.class);
         given(this.mockedUserProvider.addUser(any(), any())).willReturn(mockedUserModel);
@@ -110,14 +109,14 @@ class CertificateAuthenticatorTest {
      * Test the authentication works when user does not already exists
      */
     @Test
-    public void testAuthenticateUpdateUser() throws Exception {
+    void testAuthenticateUpdateUser() throws Exception {
         // Load the nginx
         String nginxFormatedPemCert = loadTxtFile("src/test/resources/thc-cert-nginx-format.pem");
         // "Inject" the certificate in the mocked httpheaders
         given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList(nginxFormatedPemCert));
         // Create a mocked UserModel that is returned when looking for existing user
         UserModel mockedUserModel = mock(UserModel.class);
-        given(this.mockedUserProvider.getUserByUsername(any(), any())).willReturn(mockedUserModel);
+        given(this.mockedUserProvider.getUserByUsername(any(RealmModel.class), any(String.class))).willReturn(mockedUserModel);
 
         // Run the authenticator
         this.certificateAuthenticator.authenticate(this.mockedAuthFlowContext);
@@ -133,7 +132,7 @@ class CertificateAuthenticatorTest {
      * Test the authentication fails if the certificate is missing
      */
     @Test
-    public void testAuthenticateNoCert() throws Exception {
+    void testAuthenticateNoCert() throws Exception {
         // "Inject" the missing certificate in the mocked httpheaders
         given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.emptyList());
 
@@ -148,7 +147,7 @@ class CertificateAuthenticatorTest {
      * Test the authentication fails if the certificate is incomplete
      */
     @Test
-    public void testAuthenticateIncompleteCert() {
+    void testAuthenticateIncompleteCert() {
         // "Inject" the missing certificate in the mocked httpheaders
         given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList("ASDFGHJKJHGFDSASDFGHJKL"));
 

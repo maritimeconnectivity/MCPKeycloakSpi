@@ -24,7 +24,6 @@ import org.keycloak.models.RealmProvider;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +66,7 @@ class McEventListenerProviderTest {
         given(this.mockedKeycloakSession.users()).willReturn(this.mockedUserProvider);
         given(this.mockedKeycloakSession.realms()).willReturn(this.mockedRealmProvider);
         given(this.mockedRealmProvider.getRealm(any())).willReturn(this.mockedRealmModel);
-        given(this.mockedUserProvider.getUserById(any(), any())).willReturn(this.mockedUserModel);
+        given(this.mockedUserProvider.getUserById(any(RealmModel.class), any(String.class))).willReturn(this.mockedUserModel);
 
         mockedEvent = mock(Event.class);
     }
@@ -111,7 +110,7 @@ class McEventListenerProviderTest {
         // Set an supported type that should result in going past the first check
         given(this.mockedEvent.getType()).willReturn(EventType.LOGIN);
         // Insert an identity_provider "certificates"
-        Map<String, String> details = new HashMap<String, String>();
+        Map<String, String> details = new HashMap<>();
         details.put("identity_provider", "certificates");
         given(this.mockedEvent.getDetails()).willReturn(details);
 

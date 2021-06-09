@@ -86,7 +86,7 @@ public class CertificateAuthenticator implements Authenticator {
         String permissions = user.getPermissions();
 
         // Try to find existing user
-        UserModel existingUser = session.users().getUserByUsername(mrn, realm);
+        UserModel existingUser = session.users().getUserByUsername(realm, mrn);
         if (existingUser == null) {
             log.infof("No duplication detected. Creating account for user '%s'.", mrn);
 
