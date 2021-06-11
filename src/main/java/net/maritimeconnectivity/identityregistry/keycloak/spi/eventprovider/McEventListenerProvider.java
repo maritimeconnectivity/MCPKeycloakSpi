@@ -128,7 +128,7 @@ public class McEventListenerProvider implements EventListenerProvider {
 
         if (event.getRealmId() != null && event.getUserId() != null) {
             realm = session.realms().getRealm(event.getRealmId());
-            user = session.users().getUserById(event.getUserId(), realm);
+            user = session.users().getUserById(realm, event.getUserId());
             // check that it is actually a user
             if (user != null && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
@@ -136,7 +136,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             }
         }
 
-        log.info("event info: " + sb.toString());
+        log.info("event info: " + sb);
 
         // Only users coming from an identity provider is sync'ed.
         if (identityProvider == null) {
