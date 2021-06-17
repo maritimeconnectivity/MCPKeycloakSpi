@@ -36,7 +36,7 @@
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging</artifactId>
-      <version>3.4.1.Final</version>
+      <version>3.4.2.Final</version>
     </dependency>
     <dependency>
       <groupId>javax.ws.rs</groupId>
