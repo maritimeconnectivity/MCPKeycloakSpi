@@ -101,7 +101,7 @@ public class CertificateAuthenticator implements Authenticator {
             federatedUser.setFirstName(user.getFirstName());
             federatedUser.setLastName(user.getLastName());
 
-            setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, mrnSubsidiary, homeMmsUrl, federatedUser);
+            setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, uid, mrnSubsidiary, homeMmsUrl, federatedUser);
         } else {
             log.infof("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
@@ -117,21 +117,26 @@ public class CertificateAuthenticator implements Authenticator {
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
                 existingUser.removeAttribute(attr.getKey());
             }
-            setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, mrnSubsidiary, homeMmsUrl, existingUser);
+            setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, uid, mrnSubsidiary, homeMmsUrl, existingUser);
         }
         authenticationFlowContext.success();
         log.info("Authentication flow successfully completed!");
     }
 
-    private void setUserAttributes(AuthenticationFlowContext authenticationFlowContext, PKIIdentity user, String mrn, String orgMrn, String permissions, String mrnSubsidiary, String homeMmsUrl, UserModel userModel) {
+    private void setUserAttributes(AuthenticationFlowContext authenticationFlowContext, PKIIdentity user, String mrn, String orgMrn, String permissions, String uid, String mrnSubsidiary, String homeMmsUrl, UserModel userModel) {
         if (permissions != null && !permissions.trim().isEmpty()) {
             log.infof("About to set permissions attr to: %s", permissions);
             userModel.setAttribute("permissions", Collections.singletonList(permissions));
             log.infof("Just set permissions attr to: %s", permissions);
         }
+
         log.infof("About to set mrn attr to: %s", mrn);
         userModel.setAttribute("mrn", Collections.singletonList(mrn));
         log.infof("Just set mrn attr to: %s", mrn);
+
+        log.infof("About to set uid attr to: %s", uid);
+        userModel.setAttribute("uid", Collections.singletonList(uid));
+        log.infof("Just set uid attr to: %s", uid);
 
         if (!orgMrn.trim().isEmpty()) {
             log.infof("About to set org attr to: %s", orgMrn);
