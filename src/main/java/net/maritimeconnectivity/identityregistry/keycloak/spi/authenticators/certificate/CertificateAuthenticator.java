@@ -15,9 +15,9 @@
 package net.maritimeconnectivity.identityregistry.keycloak.spi.authenticators.certificate;
 
 import lombok.NoArgsConstructor;
+import lombok.extern.jbosslog.JBossLog;
 import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.PKIIdentity;
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -33,10 +33,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@JBossLog
 @NoArgsConstructor
 public class CertificateAuthenticator implements Authenticator {
-
-    private static final Logger log = Logger.getLogger(CertificateAuthenticator.class);
 
     /**
      * Converts the certificate in the header to a Keycloak User.

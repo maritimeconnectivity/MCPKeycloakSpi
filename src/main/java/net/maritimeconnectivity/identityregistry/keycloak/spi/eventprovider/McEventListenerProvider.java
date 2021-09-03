@@ -15,6 +15,7 @@
 package net.maritimeconnectivity.identityregistry.keycloak.spi.eventprovider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.extern.jbosslog.JBossLog;
 import net.maritimeconnectivity.identityregistry.keycloak.spi.exceptions.McpException;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -29,7 +30,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
@@ -57,9 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+@JBossLog
 public class McEventListenerProvider implements EventListenerProvider {
-
-    private static final Logger log = Logger.getLogger(McEventListenerProvider.class);
 
     public static final Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
