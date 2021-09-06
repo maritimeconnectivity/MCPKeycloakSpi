@@ -39,7 +39,7 @@ public class CertificateAuthenticator implements Authenticator {
 
     /**
      * Converts the certificate in the header to a Keycloak User.
-     * It is assumed that the certificate is verified by the reserve proxy (nginx) infront of keycloak.
+     * It is assumed that the certificate is verified by the reserve proxy (nginx) in front of keycloak.
      *
      * @param authenticationFlowContext The context...
      */
@@ -125,35 +125,35 @@ public class CertificateAuthenticator implements Authenticator {
 
     private void setUserAttributes(AuthenticationFlowContext authenticationFlowContext, PKIIdentity user, String mrn, String orgMrn, String permissions, String uid, String mrnSubsidiary, String homeMmsUrl, UserModel userModel) {
         if (permissions != null && !permissions.trim().isEmpty()) {
-            log.infof("About to set permissions attr to: %s", permissions);
+            log.info("About to set permissions attr to: " + permissions);
             userModel.setAttribute("permissions", Collections.singletonList(permissions));
-            log.infof("Just set permissions attr to: %s", permissions);
+            log.info("Just set permissions attr to: " + permissions);
         }
 
-        log.infof("About to set mrn attr to: %s", mrn);
+        log.info("About to set mrn attr to: " + mrn);
         userModel.setAttribute("mrn", Collections.singletonList(mrn));
-        log.infof("Just set mrn attr to: %s", mrn);
+        log.info("Just set mrn attr to: " + mrn);
 
-        log.infof("About to set uid attr to: %s", uid);
+        log.infof("About to set uid attr to: " + uid);
         userModel.setAttribute("uid", Collections.singletonList(uid));
-        log.infof("Just set uid attr to: %s", uid);
+        log.info("Just set uid attr to: " + uid);
 
         if (!orgMrn.trim().isEmpty()) {
-            log.infof("About to set org attr to: %s", orgMrn);
+            log.info("About to set org attr to: " + orgMrn);
             userModel.setAttribute("org", Collections.singletonList(orgMrn));
-            log.infof("Just set org attr to: %s", orgMrn);
+            log.info("Just set org attr to: " + orgMrn);
         }
 
         if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
-            log.infof("About to set subsidiary_mrn attr to: %s", mrnSubsidiary);
+            log.info("About to set subsidiary_mrn attr to: " + mrnSubsidiary);
             userModel.setAttribute("subsidiary_mrn", Collections.singletonList(mrnSubsidiary));
-            log.infof("Just set subsidiary_mrn attr to: %s", mrnSubsidiary);
+            log.info("Just set subsidiary_mrn attr to: " + mrnSubsidiary);
         }
 
         if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
-            log.infof("About to set mms_url attr to: %s", homeMmsUrl);
+            log.info("About to set mms_url attr to: " + homeMmsUrl);
             userModel.setAttribute("mms_url", Collections.singletonList(homeMmsUrl));
-            log.infof("Just set mms_url attr to: %s", homeMmsUrl);
+            log.info("Just set mms_url attr to: " + homeMmsUrl);
         }
 
         extractNonUserAttributes(user, userModel);
