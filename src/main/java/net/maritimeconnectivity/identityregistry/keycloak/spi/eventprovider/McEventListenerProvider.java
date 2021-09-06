@@ -192,7 +192,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             }
             if (user.getAttributes() != null) {
                 for (Map.Entry<String, List<String>> e: user.getAttributes().entrySet()) {
-                    log.info("user attr: " + e.getKey() + ", value: "  + String.join(", ", e.getValue()));
+                    log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
                 }
             }
             sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
@@ -303,8 +303,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             HttpEntity entity = response.getEntity();
             if (status != 200) {
                 String json = getContent(entity);
-                String error = "User sync failed. Bad status: " + status + " response: " + json;
-                log.error(error);
+                log.errorf("User sync failed. Bad status: %s response: %s", status, json);
             } else {
                 log.info("User sync'ed!");
             }
