@@ -66,18 +66,18 @@ public class CertificateAuthenticator implements Authenticator {
 
         // Get user details from the certificate
         PKIIdentity user = CertificateHandler.getIdentityFromCert(userCertificate);
-        if (user == null) {
+        if (user.getMrn() == null) {
             log.warn("Extraction of data from the certificate failed!");
             throw new AuthenticationFlowException("Extraction of data from the certificate failed!", AuthenticationFlowError.INVALID_USER);
         }
 
         // Check for required data
         String mrn = user.getMrn();
-        String fullname = user.getCn();
+        String fullName = user.getCn();
         String orgMrn = user.getO();
         String email = user.getEmail();
         String uid = user.getDn();
-        if (fullname == null || fullname.isEmpty() || mrn == null || mrn.trim().isEmpty() || orgMrn == null
+        if (fullName == null || fullName.isEmpty() || mrn == null || mrn.trim().isEmpty() || orgMrn == null
                 || orgMrn.isEmpty() || uid == null || uid.trim().isEmpty()) {
             log.warn("Required data is not available in client certificate!");
             throw new AuthenticationFlowException("Required data is not available in client certificate!", AuthenticationFlowError.INVALID_USER);
