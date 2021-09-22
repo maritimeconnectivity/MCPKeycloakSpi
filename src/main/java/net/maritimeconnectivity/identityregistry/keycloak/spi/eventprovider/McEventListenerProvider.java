@@ -17,6 +17,7 @@ package net.maritimeconnectivity.identityregistry.keycloak.spi.eventprovider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.jbosslog.JBossLog;
 import net.maritimeconnectivity.identityregistry.keycloak.spi.exceptions.McpException;
+import net.maritimeconnectivity.pki.PKIIdentity;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -124,14 +125,17 @@ public class McEventListenerProvider implements EventListenerProvider {
 
         List<String> userRoles = new ArrayList<>();
         List<String> actingOnBehalfOf = new ArrayList<>();
+        CloseableHttpClient httpClient = buildHttpClient();
+        PKIIdentity pkiIdentity = new PKIIdentity();
 
         if (event.getRealmId() != null && event.getUserId() != null) {
             realm = session.realms().getRealm(event.getRealmId());
             user = session.users().getUserById(realm, event.getUserId());
+            // TODO: this should be removed when we move to the new implementation of the MSR
             // check that it is actually a user
             if (user != null && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
             }
         }
 
@@ -195,30 +199,32 @@ public class McEventListenerProvider implements EventListenerProvider {
                     log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
                 }
             }
-            sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
+            sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
 
+            // TODO: this should be removed when we move to the new implementation of the MSR
             // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
             if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+            }
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                log.error("Could not close HTTP client", e);
             }
         }
     }
 
-    protected void getUserRolesAndActingOnBehalfOf(List<String> userRoles, List<String> actingOnBehalfOf, UserModel user) {
-        try (CloseableHttpClient httpClient = buildHttpClient()) {
-            userRoles.addAll(getUserRoles(user.getUsername(), httpClient));
-            user.setAttribute("roles", userRoles);
-            actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername(), httpClient));
-            user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
-        } catch (IOException e) {
-            log.error("HTTP client could not be closed", e);
-        }
+    protected void getUserRolesAndActingOnBehalfOf(List<String> userRoles, List<String> actingOnBehalfOf, UserModel user, CloseableHttpClient httpClient) {
+        userRoles.addAll(getUserRoles(user.getUsername(), httpClient));
+        user.setAttribute("roles", userRoles);
+        actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername(), httpClient));
+        user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
     }
 
-    protected List<String> getUserRoles(String userMrn, CloseableHttpClient client) {
+    protected List<String> getUserRoles(String userMrn, CloseableHttpClient httpClient) {
         if (serverRoot != null) {
-            if (client == null) {
+            if (httpClient == null) {
                 log.error("Could not build http client to get user roles");
                 return new ArrayList<>();
             }
@@ -226,7 +232,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             HttpGet get = new HttpGet(uri);
             CloseableHttpResponse response;
             try {
-                response = client.execute(get);
+                response = httpClient.execute(get);
                 int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
@@ -246,9 +252,9 @@ public class McEventListenerProvider implements EventListenerProvider {
         return new ArrayList<>();
     }
 
-    protected List<String> getActingOnBehalfOf(String userMrn, CloseableHttpClient client) {
+    protected List<String> getActingOnBehalfOf(String userMrn, CloseableHttpClient httpClient) {
         if (serverRoot != null) {
-            if (client == null) {
+            if (httpClient == null) {
                 log.error("Could not build http client");
                 return new ArrayList<>();
             }
@@ -256,7 +262,7 @@ public class McEventListenerProvider implements EventListenerProvider {
             HttpGet get = new HttpGet(uri);
             CloseableHttpResponse response;
             try {
-                response = client.execute(get);
+                response = httpClient.execute(get);
                 int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
@@ -275,8 +281,36 @@ public class McEventListenerProvider implements EventListenerProvider {
         return new ArrayList<>();
     }
 
-    protected void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress) {
-        CloseableHttpClient client = buildHttpClient();
+    protected PKIIdentity getPKIIdentity(String userMrn, CloseableHttpClient httpClient) {
+       if (serverRoot != null) {
+           if (httpClient == null) {
+               log.error("Could not build http client");
+               return new PKIIdentity();
+           }
+           String uri = serverRoot + "/service/" + userMrn + "pki-identity";
+           HttpGet get = new HttpGet(uri);
+           CloseableHttpResponse response;
+           try {
+               response = httpClient.execute(get);
+               int status = response.getStatusLine().getStatusCode();
+               HttpEntity entity = response.getEntity();
+               if (status != 200) {
+                   log.error("Getting PKIIdentity of user failed");
+               } else {
+                   String json = getContent(entity);
+                   PKIIdentity pkiIdentity = JsonSerialization.readValue(json, PKIIdentity.class);
+                   if (pkiIdentity != null) {
+                       return pkiIdentity;
+                   }
+               }
+           } catch (IOException e) {
+               log.error("Could not get PKIIdentity of user", e);
+           }
+       }
+       return new PKIIdentity();
+    }
+
+    protected void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress, CloseableHttpClient client) {
         if (client == null) {
             return;
         }
@@ -314,7 +348,6 @@ public class McEventListenerProvider implements EventListenerProvider {
                 if (response != null) {
                     response.close();
                 }
-                client.close();
             } catch (IOException e) {
                 log.error("Could not close user update response", e);
             }

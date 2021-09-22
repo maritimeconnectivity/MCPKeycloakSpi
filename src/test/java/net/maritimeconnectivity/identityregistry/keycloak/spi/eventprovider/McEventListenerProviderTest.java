@@ -157,8 +157,8 @@ class McEventListenerProviderTest {
         mcEventListenerProvider = spy(new McEventListenerProvider(mockedKeycloakSession, null, null, null, null, null, noSyncIdps));
 
         // Make sure the sendUserUpdate method does nothing
-        doNothing().when(mcEventListenerProvider).sendUserUpdate(any(), any(), any(), any());
-        doNothing().when(mcEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any());
+        doNothing().when(mcEventListenerProvider).sendUserUpdate(any(), any(), any(), any(), any());
+        doNothing().when(mcEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any(), any());
 
         // Call onEvent
         mcEventListenerProvider.onEvent(this.mockedEvent);
@@ -168,7 +168,7 @@ class McEventListenerProviderTest {
         verify(mockedEvent, times(2)).getDetails();
         verify(mockedEvent, times(4)).getRealmId();
         verify(mockedUserModel, times(1)).getEmail();
-        verify(mcEventListenerProvider, times(1)).sendUserUpdate(any(), eq("urn:mrn:mcl:org:dma"), eq(null), eq(null));
+        verify(mcEventListenerProvider, times(1)).sendUserUpdate(any(), eq("urn:mrn:mcl:org:dma"), eq(null), eq(null), any());
     }
 
 }
