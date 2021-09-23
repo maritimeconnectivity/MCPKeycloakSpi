@@ -54,12 +54,13 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 @JBossLog
-public class McEventListenerProvider implements EventListenerProvider {
+public class MCPEventListenerProvider implements EventListenerProvider {
 
     public static final Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
@@ -72,8 +73,9 @@ public class McEventListenerProvider implements EventListenerProvider {
     private final String[] idpNotToSync;
 
     private final TypeReference<ArrayList<String>> arrayListTypeReference = new TypeReference<ArrayList<String>>() {};
+    private final String servicePath;
 
-    public McEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
+    public MCPEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
         this.session = session;
         this.serverRoot = serverRoot;
         this.keystorePath = keystorePath;
@@ -81,6 +83,7 @@ public class McEventListenerProvider implements EventListenerProvider {
         this.truststorePath = truststorePath;
         this.truststorePassword = truststorePassword;
         this.idpNotToSync = idpNotToSync;
+        this.servicePath = serverRoot + "/service/";
     }
 
     @Override
@@ -125,93 +128,101 @@ public class McEventListenerProvider implements EventListenerProvider {
 
         List<String> userRoles = new ArrayList<>();
         List<String> actingOnBehalfOf = new ArrayList<>();
-        CloseableHttpClient httpClient = buildHttpClient();
-        PKIIdentity pkiIdentity = new PKIIdentity();
+        try (CloseableHttpClient httpClient = buildHttpClient()) {
+            PKIIdentity pkiIdentity = null;
+            String userUid = null;
 
-        if (event.getRealmId() != null && event.getUserId() != null) {
-            realm = session.realms().getRealm(event.getRealmId());
-            user = session.users().getUserById(realm, event.getUserId());
-            // TODO: this should be removed when we move to the new implementation of the MSR
-            // check that it is actually a user
-            if (user != null && user.getUsername().contains(":user:")) {
-                // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+            if (event.getRealmId() != null && event.getUserId() != null) {
+                realm = session.realms().getRealm(event.getRealmId());
+                user = session.users().getUserById(realm, event.getUserId());
+                // TODO: this should be removed when we move to the new implementation of the MSR
+                // check that it is actually a user
+                if (user != null && user.getUsername().contains(":user:")) {
+                    // Get the roles and the organisations that the user can act on behalf of
+                    getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+                    List<String> uidList = user.getAttributes().get("uid");
+                    if (uidList == null || uidList.isEmpty()) {
+                        pkiIdentity = getPKIIdentity(user.getUsername(), user, httpClient);
+                        userUid = pkiIdentity.getDn();
+                    }
+                }
+
             }
-        }
 
-        log.info("event info: " + sb);
+            log.info("event info: " + sb);
 
-        // Only users coming from an identity provider is sync'ed.
-        if (identityProvider == null) {
-            log.info("no identity provider found for this user, so sync skipped!");
-            return;
-        }
-
-        // we skip certain identity providers
-        if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
-            log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
-            return;
-        }
-
-        if (event.getRealmId() != null && event.getUserId() != null && user != null) {
-            User mcUser = new User();
-            mcUser.setEmail(user.getEmail());
-            mcUser.setFirstName(user.getFirstName());
-            mcUser.setLastName(user.getLastName());
-            // The username is in reality a mrn...
-            mcUser.setMrn(user.getUsername());
-            String orgMrn = null;
-            List<String> orgList = user.getAttributes().get("org");
-            if (orgList != null && !orgList.isEmpty()) {
-                orgMrn = orgList.get(0);
-            }
-            if (orgMrn == null || orgMrn.isEmpty()) {
-                log.warn("No org MRN found, skipping user sync");
+            // Only users coming from an identity provider is sync'ed.
+            if (identityProvider == null) {
+                log.info("no identity provider found for this user, so sync skipped!");
                 return;
             }
-            List<String> permissionsList = user.getAttributes().get("permissions");
-            if (permissionsList != null && !permissionsList.isEmpty()) {
-                mcUser.setPermissions(String.join(", ", permissionsList));
-            }
-            // in case the user comes from an Identity Provider that hosts multiple organizations, the organization is
-            // not always known, so some extra info is/can be given, which is then used for sync
-            List<String> orgNameList = user.getAttributes().get("org-name");
-            String orgName = null;
-            if (orgNameList != null && !orgNameList.isEmpty()) {
-                orgName = orgNameList.get(0);
-            }
-            List<String> orgAddressList = user.getAttributes().get("org-address");
-            String orgAddress = null;
-            if (orgAddressList != null && !orgAddressList.isEmpty()) {
-                orgAddress = orgAddressList.get(0);
-            }
-            // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
-            // in the orgName. Also puts a dummy value in the orgAddress if needed.
-            if (orgName != null && MRN_PATTERN.matcher(orgName).matches()) {
-                int idx = orgMrn.lastIndexOf(':') + 1;
-                orgName = orgMrn.substring(idx);
-                if (orgAddress == null || orgAddress.isEmpty()) {
-                    orgAddress = "A round the corner, The Seven Seas";
-                }
-            }
-            if (user.getAttributes() != null) {
-                for (Map.Entry<String, List<String>> e: user.getAttributes().entrySet()) {
-                    log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
-                }
-            }
-            sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
 
-            // TODO: this should be removed when we move to the new implementation of the MSR
-            // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
-            if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
-                // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+            // we skip certain identity providers
+            if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
+                log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
+                return;
             }
-            try {
-                httpClient.close();
-            } catch (IOException e) {
-                log.error("Could not close HTTP client", e);
+
+            if (event.getRealmId() != null && event.getUserId() != null && user != null) {
+                User mcUser = new User();
+                mcUser.setEmail(user.getEmail());
+                mcUser.setFirstName(user.getFirstName());
+                mcUser.setLastName(user.getLastName());
+                // The username is in reality a mrn...
+                mcUser.setMrn(user.getUsername());
+                String orgMrn = null;
+                List<String> orgList = user.getAttributes().get("org");
+                if (orgList != null && !orgList.isEmpty()) {
+                    orgMrn = orgList.get(0);
+                }
+                if (orgMrn == null || orgMrn.isEmpty()) {
+                    log.warn("No org MRN found, skipping user sync");
+                    return;
+                }
+                List<String> permissionsList = user.getAttributes().get("permissions");
+                if (permissionsList != null && !permissionsList.isEmpty()) {
+                    mcUser.setPermissions(String.join(", ", permissionsList));
+                }
+                // in case the user comes from an Identity Provider that hosts multiple organizations, the organization is
+                // not always known, so some extra info is/can be given, which is then used for sync
+                List<String> orgNameList = user.getAttributes().get("org-name");
+                String orgName = null;
+                if (orgNameList != null && !orgNameList.isEmpty()) {
+                    orgName = orgNameList.get(0);
+                }
+                List<String> orgAddressList = user.getAttributes().get("org-address");
+                String orgAddress = null;
+                if (orgAddressList != null && !orgAddressList.isEmpty()) {
+                    orgAddress = orgAddressList.get(0);
+                }
+                // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
+                // in the orgName. Also puts a dummy value in the orgAddress if needed.
+                if (orgName != null && MRN_PATTERN.matcher(orgName).matches()) {
+                    int idx = orgMrn.lastIndexOf(':') + 1;
+                    orgName = orgMrn.substring(idx);
+                    if (orgAddress == null || orgAddress.isEmpty()) {
+                        orgAddress = "A round the corner, The Seven Seas";
+                    }
+                }
+                if (user.getAttributes() != null) {
+                    for (Map.Entry<String, List<String>> e : user.getAttributes().entrySet()) {
+                        log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
+                    }
+                }
+                sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
+
+                // TODO: this should be removed when we move to the new implementation of the MSR
+                // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
+                if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
+                    // Get the roles and the organisations that the user can act on behalf of
+                    getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+                }
+                if ((pkiIdentity == null || userUid == null || userUid.equals("")) && user.getUsername().contains(":user:")) {
+                    getPKIIdentity(user.getUsername(), user, httpClient);
+                }
             }
+        } catch (IOException e) {
+            log.error("Could not close HTTP client", e);
         }
     }
 
@@ -228,7 +239,7 @@ public class McEventListenerProvider implements EventListenerProvider {
                 log.error("Could not build http client to get user roles");
                 return new ArrayList<>();
             }
-            String uri = serverRoot + "/service/" + userMrn + "/roles";
+            String uri = servicePath + userMrn + "/roles";
             HttpGet get = new HttpGet(uri);
             CloseableHttpResponse response;
             try {
@@ -258,7 +269,7 @@ public class McEventListenerProvider implements EventListenerProvider {
                 log.error("Could not build http client");
                 return new ArrayList<>();
             }
-            String uri = serverRoot + "/service/" + userMrn + "/acting-on-behalf-of";
+            String uri = servicePath + userMrn + "/acting-on-behalf-of";
             HttpGet get = new HttpGet(uri);
             CloseableHttpResponse response;
             try {
@@ -281,33 +292,36 @@ public class McEventListenerProvider implements EventListenerProvider {
         return new ArrayList<>();
     }
 
-    protected PKIIdentity getPKIIdentity(String userMrn, CloseableHttpClient httpClient) {
-       if (serverRoot != null) {
-           if (httpClient == null) {
-               log.error("Could not build http client");
-               return new PKIIdentity();
-           }
-           String uri = serverRoot + "/service/" + userMrn + "pki-identity";
-           HttpGet get = new HttpGet(uri);
-           CloseableHttpResponse response;
-           try {
-               response = httpClient.execute(get);
-               int status = response.getStatusLine().getStatusCode();
-               HttpEntity entity = response.getEntity();
-               if (status != 200) {
-                   log.error("Getting PKIIdentity of user failed");
-               } else {
-                   String json = getContent(entity);
-                   PKIIdentity pkiIdentity = JsonSerialization.readValue(json, PKIIdentity.class);
-                   if (pkiIdentity != null) {
-                       return pkiIdentity;
-                   }
-               }
-           } catch (IOException e) {
-               log.error("Could not get PKIIdentity of user", e);
-           }
-       }
-       return new PKIIdentity();
+    protected PKIIdentity getPKIIdentity(String userMrn, UserModel user, CloseableHttpClient httpClient) {
+        if (serverRoot != null) {
+            if (httpClient == null) {
+                log.error("Could not build http client");
+                return null;
+            }
+            String uri = servicePath + userMrn + "pki-identity";
+            HttpGet get = new HttpGet(uri);
+            CloseableHttpResponse response;
+            try {
+                response = httpClient.execute(get);
+                int status = response.getStatusLine().getStatusCode();
+                HttpEntity entity = response.getEntity();
+                if (status != 200) {
+                    log.error("Getting PKIIdentity of user failed");
+                } else {
+                    String json = getContent(entity);
+                    PKIIdentity pkiIdentity = JsonSerialization.readValue(json, PKIIdentity.class);
+                    if (pkiIdentity != null) {
+                        user.setAttribute("uid", Collections.singletonList(pkiIdentity.getDn()));
+                        user.setAttribute("subsidiary_mrn", Collections.singletonList(pkiIdentity.getMrnSubsidiary()));
+                        user.setAttribute("mms_url", Collections.singletonList(pkiIdentity.getHomeMmsUrl()));
+                    }
+                    return pkiIdentity;
+                }
+            } catch (IOException e) {
+                log.error("Could not get PKIIdentity of user", e);
+            }
+        }
+        return null;
     }
 
     protected void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress, CloseableHttpClient client) {
