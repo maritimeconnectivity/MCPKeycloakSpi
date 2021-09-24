@@ -333,7 +333,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             try {
                 uri += "?org-name=" + URLEncoder.encode(orgName, "UTF-8") + "&org-address=" + URLEncoder.encode(orgAddress, "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                log.error("Threw exception", e);
+                log.error("URL encoding failed", e);
                 return;
             }
         }
