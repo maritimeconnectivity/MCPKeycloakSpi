@@ -298,7 +298,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                 log.error("Could not build http client");
                 return null;
             }
-            String uri = servicePath + userMrn + "pki-identity";
+            String uri = servicePath + userMrn + "/pki-identity";
             HttpGet get = new HttpGet(uri);
             CloseableHttpResponse response;
             try {
