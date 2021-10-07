@@ -181,7 +181,7 @@ public class CertificateAuthenticator implements Authenticator {
             userModel.setAttribute("imo_number", Collections.singletonList(imoNumber));
         }
         if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
-            userModel.setAttribute("mmsi_number", Collections.singletonList(mmsiNumber));
+            userModel.setAttribute("mmsi", Collections.singletonList(mmsiNumber));
         }
         if (aisShipType != null && aisShipType.trim().isEmpty()) {
             userModel.setAttribute("ais_type", Collections.singletonList(aisShipType));
@@ -190,7 +190,7 @@ public class CertificateAuthenticator implements Authenticator {
             userModel.setAttribute("registered_port", Collections.singletonList(portOfRegister));
         }
         if (shipMrn != null && !shipMrn.trim().isEmpty()) {
-            userModel.setAttribute("vessel_mrn", Collections.singletonList(shipMrn));
+            userModel.setAttribute("ship_mrn", Collections.singletonList(shipMrn));
         }
         if (url != null && !url.trim().isEmpty()) {
             userModel.setAttribute("url", Collections.singletonList(url));
