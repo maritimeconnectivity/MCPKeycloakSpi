@@ -20,7 +20,7 @@ import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
-public class McEventListenerProviderFactory implements EventListenerProviderFactory {
+public class MCPEventListenerProviderFactory implements EventListenerProviderFactory {
 
     private String serverRoot = "";
     private String keystorePath = "";
@@ -50,7 +50,7 @@ public class McEventListenerProviderFactory implements EventListenerProviderFact
     }
 
     public EventListenerProvider create(KeycloakSession session) {
-        return new McEventListenerProvider(session, serverRoot, keystorePath, keystorePassword, truststorePath, truststorePassword, idpNotToSync);
+        return new MCPEventListenerProvider(session, serverRoot, keystorePath, keystorePassword, truststorePath, truststorePassword, idpNotToSync);
     }
 
     public void postInit(KeycloakSessionFactory arg0) {

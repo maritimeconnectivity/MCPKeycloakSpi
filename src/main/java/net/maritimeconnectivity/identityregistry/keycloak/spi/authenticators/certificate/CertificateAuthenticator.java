@@ -15,9 +15,9 @@
 package net.maritimeconnectivity.identityregistry.keycloak.spi.authenticators.certificate;
 
 import lombok.NoArgsConstructor;
+import lombok.extern.jbosslog.JBossLog;
 import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.PKIIdentity;
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -33,14 +33,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@JBossLog
 @NoArgsConstructor
 public class CertificateAuthenticator implements Authenticator {
 
-    private static final Logger log = Logger.getLogger(CertificateAuthenticator.class);
-
     /**
      * Converts the certificate in the header to a Keycloak User.
-     * It is assumed that the certificate is verified by the reserve proxy (nginx) infront of keycloak.
+     * It is assumed that the certificate is verified by the reserve proxy (nginx) in front of keycloak.
      *
      * @param authenticationFlowContext The context...
      */
@@ -67,23 +66,27 @@ public class CertificateAuthenticator implements Authenticator {
 
         // Get user details from the certificate
         PKIIdentity user = CertificateHandler.getIdentityFromCert(userCertificate);
-        if (user == null) {
+        if (user.getMrn() == null) {
             log.warn("Extraction of data from the certificate failed!");
             throw new AuthenticationFlowException("Extraction of data from the certificate failed!", AuthenticationFlowError.INVALID_USER);
         }
 
         // Check for required data
         String mrn = user.getMrn();
-        String fullname = user.getCn();
+        String fullName = user.getCn();
         String orgMrn = user.getO();
         String email = user.getEmail();
-        if (fullname == null || fullname.isEmpty() || mrn == null || mrn.isEmpty() || orgMrn == null || orgMrn.isEmpty()) {
+        String uid = user.getDn();
+        if (fullName == null || fullName.isEmpty() || mrn == null || mrn.trim().isEmpty() || orgMrn == null
+                || orgMrn.isEmpty() || uid == null || uid.trim().isEmpty()) {
             log.warn("Required data is not available in client certificate!");
             throw new AuthenticationFlowException("Required data is not available in client certificate!", AuthenticationFlowError.INVALID_USER);
         }
         KeycloakSession session = authenticationFlowContext.getSession();
         RealmModel realm = authenticationFlowContext.getRealm();
         String permissions = user.getPermissions();
+        String mrnSubsidiary = user.getMrnSubsidiary();
+        String homeMmsUrl = user.getHomeMmsUrl();
 
         // Try to find existing user
         UserModel existingUser = session.users().getUserByUsername(realm, mrn);
@@ -98,24 +101,7 @@ public class CertificateAuthenticator implements Authenticator {
             federatedUser.setFirstName(user.getFirstName());
             federatedUser.setLastName(user.getLastName());
 
-            log.info("About to set permissions attr to: " + user.getPermissions());
-            if (permissions != null && !permissions.trim().isEmpty()) {
-                federatedUser.setAttribute("permissions", Collections.singletonList(permissions));
-                log.info("Just set permissions attr to: " + permissions);
-            }
-            log.info("About to set mrn attr to: " + mrn);
-            if (!mrn.trim().isEmpty()) {
-                federatedUser.setAttribute("mrn", Collections.singletonList(mrn));
-                log.info("Just set mrn attr to: " + mrn);
-            }
-            log.info("About to set org attr to: " + orgMrn);
-            if (!orgMrn.trim().isEmpty()) {
-                federatedUser.setAttribute("org", Collections.singletonList(orgMrn));
-                log.info("Just set org attr to: " + orgMrn);
-            }
-            extractNonUserAttributes(user, mrn, federatedUser);
-
-            authenticationFlowContext.setUser(federatedUser);
+            setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, uid, mrnSubsidiary, homeMmsUrl, federatedUser);
         } else {
             log.infof("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
@@ -131,72 +117,83 @@ public class CertificateAuthenticator implements Authenticator {
             for (Map.Entry<String, List<String>> attr : existingUser.getAttributes().entrySet()) {
                 existingUser.removeAttribute(attr.getKey());
             }
-            log.info("About to set permissions attr to: " + permissions);
-            if (permissions != null && !permissions.trim().isEmpty()) {
-                existingUser.setAttribute("permissions", Collections.singletonList(permissions));
-                log.info("Just set permissions attr to: " + permissions);
-            }
-            log.info("About to set mrn attr to: " + mrn);
-            if (!mrn.trim().isEmpty()) {
-                existingUser.setAttribute("mrn", Collections.singletonList(mrn));
-                log.info("Just set mrn attr to: " + mrn);
-            }
-            log.info("About to set org attr to: " + orgMrn);
-            if (!orgMrn.trim().isEmpty()) {
-                existingUser.setAttribute("org", Collections.singletonList(orgMrn));
-                log.info("Just set org attr to: " + orgMrn);
-            }
-            extractNonUserAttributes(user, mrn, existingUser);
-
-            authenticationFlowContext.setUser(existingUser);
+            setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, uid, mrnSubsidiary, homeMmsUrl, existingUser);
         }
         authenticationFlowContext.success();
         log.info("Authentication flow successfully completed!");
     }
 
-    private void extractNonUserAttributes(PKIIdentity user, String mrn, UserModel userModel) {
-        if (!mrn.trim().contains(":user:")) {
-            String flagState = user.getFlagState();
-            String callSign = user.getCallSign();
-            String imoNumber = user.getImoNumber();
-            String mmsiNumber = user.getMmsiNumber();
-            String aisShipType = user.getAisShipType();
-            String portOfRegister = user.getPortOfRegister();
-            String shipMrn = user.getShipMrn();
-            String mrnSubsidiary = user.getMrnSubsidiary();
-            String homeMmsUrl = user.getHomeMmsUrl();
-            String url = user.getUrl();
+    private void setUserAttributes(AuthenticationFlowContext authenticationFlowContext, PKIIdentity user, String mrn, String orgMrn, String permissions, String uid, String mrnSubsidiary, String homeMmsUrl, UserModel userModel) {
+        if (permissions != null && !permissions.trim().isEmpty()) {
+            log.info("About to set permissions attr to: " + permissions);
+            userModel.setAttribute("permissions", Collections.singletonList(permissions));
+            log.info("Just set permissions attr to: " + permissions);
+        }
 
-            if (flagState != null && !flagState.trim().isEmpty()) {
-                userModel.setAttribute("flagstate", Collections.singletonList(flagState));
-            }
-            if (callSign != null && !callSign.trim().isEmpty()) {
-                userModel.setAttribute("callsign", Collections.singletonList(callSign));
-            }
-            if (imoNumber != null && !imoNumber.trim().isEmpty()) {
-                userModel.setAttribute("imo_number", Collections.singletonList(imoNumber));
-            }
-            if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
-                userModel.setAttribute("mmsi_number", Collections.singletonList(mmsiNumber));
-            }
-            if (aisShipType != null && aisShipType.trim().isEmpty()) {
-                userModel.setAttribute("ais_type", Collections.singletonList(aisShipType));
-            }
-            if (portOfRegister != null && !portOfRegister.trim().isEmpty()) {
-                userModel.setAttribute("registered_port", Collections.singletonList(portOfRegister));
-            }
-            if (shipMrn != null && !shipMrn.trim().isEmpty()) {
-                userModel.setAttribute("vessel_mrn", Collections.singletonList(shipMrn));
-            }
-            if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
-                userModel.setAttribute("subsidiary_mrn", Collections.singletonList(mrnSubsidiary));
-            }
-            if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
-                userModel.setAttribute("mms_url", Collections.singletonList(homeMmsUrl));
-            }
-            if (url != null && !url.trim().isEmpty()) {
-                userModel.setAttribute("url", Collections.singletonList(url));
-            }
+        log.info("About to set mrn attr to: " + mrn);
+        userModel.setAttribute("mrn", Collections.singletonList(mrn));
+        log.info("Just set mrn attr to: " + mrn);
+
+        log.infof("About to set uid attr to: " + uid);
+        userModel.setAttribute("uid", Collections.singletonList(uid));
+        log.info("Just set uid attr to: " + uid);
+
+        if (!orgMrn.trim().isEmpty()) {
+            log.info("About to set org attr to: " + orgMrn);
+            userModel.setAttribute("org", Collections.singletonList(orgMrn));
+            log.info("Just set org attr to: " + orgMrn);
+        }
+
+        if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
+            log.info("About to set subsidiary_mrn attr to: " + mrnSubsidiary);
+            userModel.setAttribute("subsidiary_mrn", Collections.singletonList(mrnSubsidiary));
+            log.info("Just set subsidiary_mrn attr to: " + mrnSubsidiary);
+        }
+
+        if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
+            log.info("About to set mms_url attr to: " + homeMmsUrl);
+            userModel.setAttribute("mms_url", Collections.singletonList(homeMmsUrl));
+            log.info("Just set mms_url attr to: " + homeMmsUrl);
+        }
+
+        extractNonUserAttributes(user, userModel);
+
+        authenticationFlowContext.setUser(userModel);
+    }
+
+    private void extractNonUserAttributes(PKIIdentity user, UserModel userModel) {
+        String flagState = user.getFlagState();
+        String callSign = user.getCallSign();
+        String imoNumber = user.getImoNumber();
+        String mmsiNumber = user.getMmsiNumber();
+        String aisShipType = user.getAisShipType();
+        String portOfRegister = user.getPortOfRegister();
+        String shipMrn = user.getShipMrn();
+        String url = user.getUrl();
+
+        if (flagState != null && !flagState.trim().isEmpty()) {
+            userModel.setAttribute("flagstate", Collections.singletonList(flagState));
+        }
+        if (callSign != null && !callSign.trim().isEmpty()) {
+            userModel.setAttribute("callsign", Collections.singletonList(callSign));
+        }
+        if (imoNumber != null && !imoNumber.trim().isEmpty()) {
+            userModel.setAttribute("imo_number", Collections.singletonList(imoNumber));
+        }
+        if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
+            userModel.setAttribute("mmsi", Collections.singletonList(mmsiNumber));
+        }
+        if (aisShipType != null && aisShipType.trim().isEmpty()) {
+            userModel.setAttribute("ais_type", Collections.singletonList(aisShipType));
+        }
+        if (portOfRegister != null && !portOfRegister.trim().isEmpty()) {
+            userModel.setAttribute("registered_port", Collections.singletonList(portOfRegister));
+        }
+        if (shipMrn != null && !shipMrn.trim().isEmpty()) {
+            userModel.setAttribute("ship_mrn", Collections.singletonList(shipMrn));
+        }
+        if (url != null && !url.trim().isEmpty()) {
+            userModel.setAttribute("url", Collections.singletonList(url));
         }
     }
 

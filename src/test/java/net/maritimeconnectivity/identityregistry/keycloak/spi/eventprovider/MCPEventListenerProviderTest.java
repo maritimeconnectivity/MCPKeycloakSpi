@@ -14,6 +14,7 @@
  */
 package net.maritimeconnectivity.identityregistry.keycloak.spi.eventprovider;
 
+import net.maritimeconnectivity.pki.PKIIdentity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.events.Event;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 
-class McEventListenerProviderTest {
+class MCPEventListenerProviderTest {
 
     private Event mockedEvent;
 
@@ -53,7 +54,7 @@ class McEventListenerProviderTest {
 
     private UserProvider mockedUserProvider;
 
-    private McEventListenerProvider mcEventListenerProvider;
+    private MCPEventListenerProvider mcpEventListenerProvider;
 
     @BeforeEach
     void setUp() {
@@ -79,8 +80,8 @@ class McEventListenerProviderTest {
         // Set an unsupported type that should result in no actions
         given(this.mockedEvent.getType()).willReturn(EventType.CLIENT_LOGIN);
 
-        mcEventListenerProvider = new McEventListenerProvider(null, null, null, null, null, null, null);
-        mcEventListenerProvider.onEvent(this.mockedEvent);
+        mcpEventListenerProvider = new MCPEventListenerProvider(null, null, null, null, null, null, null);
+        mcpEventListenerProvider.onEvent(this.mockedEvent);
 
         verify(mockedEvent, times(1)).getType();
         verify(mockedEvent, times(0)).getDetails();
@@ -95,8 +96,8 @@ class McEventListenerProviderTest {
         // Set an supported type that should result in going past the first check
         given(this.mockedEvent.getType()).willReturn(EventType.LOGIN);
 
-        mcEventListenerProvider = new McEventListenerProvider(null, null, null, null, null, null, null);
-        mcEventListenerProvider.onEvent(this.mockedEvent);
+        mcpEventListenerProvider = new MCPEventListenerProvider(null, null, "src/test/resources/keystore.jks", "changeit", null, null, null);
+        mcpEventListenerProvider.onEvent(this.mockedEvent);
         verify(mockedEvent, times(2)).getType();
         verify(mockedEvent, times(2)).getDetails();
         verify(mockedEvent, times(2)).getRealmId();
@@ -117,8 +118,8 @@ class McEventListenerProviderTest {
         // Put "certificates" in the list of identity_providers that should be skipped.
         String[] noSyncIdps = new String[]{ "certificates" };
 
-        mcEventListenerProvider = new McEventListenerProvider(null, null, null, null, null, null, noSyncIdps);
-        mcEventListenerProvider.onEvent(this.mockedEvent);
+        mcpEventListenerProvider = new MCPEventListenerProvider(null, null, "src/test/resources/keystore.jks", "changeit", null, null, noSyncIdps);
+        mcpEventListenerProvider.onEvent(this.mockedEvent);
         verify(mockedEvent, times(2)).getType();
         verify(mockedEvent, times(2)).getDetails();
         verify(mockedEvent, times(2)).getRealmId();
@@ -154,21 +155,24 @@ class McEventListenerProviderTest {
         String[] noSyncIdps = new String[]{ "certificates" };
 
         // Create a spy version of the event listener
-        mcEventListenerProvider = spy(new McEventListenerProvider(mockedKeycloakSession, null, null, null, null, null, noSyncIdps));
+        mcpEventListenerProvider = spy(new MCPEventListenerProvider(mockedKeycloakSession, "", "src/test/resources/keystore.jks", "changeit", null, null, noSyncIdps));
 
         // Make sure the sendUserUpdate method does nothing
-        doNothing().when(mcEventListenerProvider).sendUserUpdate(any(), any(), any(), any());
-        doNothing().when(mcEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any());
+        doNothing().when(mcpEventListenerProvider).sendUserUpdate(any(), any(), any(), any(), any());
+        doNothing().when(mcpEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any(), any());
+        PKIIdentity mockPKIIdentity = spy(new PKIIdentity());
+        given(mcpEventListenerProvider.getPKIIdentity(any(), any(), any())).willReturn(mockPKIIdentity);
 
         // Call onEvent
-        mcEventListenerProvider.onEvent(this.mockedEvent);
+        mcpEventListenerProvider.onEvent(this.mockedEvent);
 
         // Verify the execution went as planed
         verify(mockedEvent, times(2)).getType();
         verify(mockedEvent, times(2)).getDetails();
         verify(mockedEvent, times(4)).getRealmId();
         verify(mockedUserModel, times(1)).getEmail();
-        verify(mcEventListenerProvider, times(1)).sendUserUpdate(any(), eq("urn:mrn:mcl:org:dma"), eq(null), eq(null));
+        verify(mcpEventListenerProvider, times(1)).sendUserUpdate(any(), eq("urn:mrn:mcl:org:dma"), eq(null), eq(null), any());
+        verify(mcpEventListenerProvider, times(2)).getPKIIdentity(eq("urn:mrn:mcl:user:dma:thc"), any(), any());
     }
 
 }
