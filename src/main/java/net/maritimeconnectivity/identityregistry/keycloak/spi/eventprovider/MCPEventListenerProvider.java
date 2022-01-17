@@ -415,7 +415,6 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         SSLContext sslcontext;
         try {
             SSLContextBuilder sslContextBuilder = SSLContexts.custom();
-            sslContextBuilder.loadKeyMaterial(keyStore, keystorePassword.toCharArray());
             // If you have a trust store - should only be needed when the site we contact use self-signed certificates.
             if (trustStore != null) {
                 sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
