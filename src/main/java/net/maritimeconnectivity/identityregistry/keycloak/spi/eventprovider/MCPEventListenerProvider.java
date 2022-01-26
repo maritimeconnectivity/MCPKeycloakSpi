@@ -44,8 +44,8 @@ import javax.net.ssl.SSLContext;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -330,12 +330,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         }
         String uri = serverRoot + "/x509/api/org/" + orgMrn + "/user-sync/";
         if (orgName != null && orgAddress != null) {
-            try {
-                uri += "?org-name=" + URLEncoder.encode(orgName, "UTF-8") + "&org-address=" + URLEncoder.encode(orgAddress, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                log.error("URL encoding failed", e);
-                return;
-            }
+            uri += "?org-name=" + URLEncoder.encode(orgName, StandardCharsets.UTF_8) + "&org-address=" + URLEncoder.encode(orgAddress, StandardCharsets.UTF_8);
         }
         HttpPost post = new HttpPost(uri);
         CloseableHttpResponse response = null;
@@ -384,11 +379,9 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         log.info("truststorePath path: " + truststorePath);
         KeyStore keyStore;
         KeyStore trustStore = null;
-        FileInputStream instreamKeystore = null;
         FileInputStream instreamTruststore = null;
-        try {
+        try (FileInputStream instreamKeystore = new FileInputStream(keystorePath)) {
             keyStore = KeyStore.getInstance("jks");
-            instreamKeystore = new FileInputStream(keystorePath);
             keyStore.load(instreamKeystore, keystorePassword.toCharArray());
             if (truststorePath != null && !truststorePath.isEmpty()) {
                 trustStore = KeyStore.getInstance("jks");
@@ -400,14 +393,11 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             throw new McpException(e);
         } finally {
             try {
-                if (instreamKeystore != null) {
-                    instreamKeystore.close();
-                }
                 if (instreamTruststore != null) {
                     instreamTruststore.close();
                 }
             } catch (IOException e) {
-                log.error("Could not close keystore or truststore", e);
+                log.error("Could not close truststore", e);
             }
         }
 
