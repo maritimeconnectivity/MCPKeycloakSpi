@@ -53,7 +53,7 @@ public class MCPEventListenerProviderFactory implements EventListenerProviderFac
         return new MCPEventListenerProvider(session, serverRoot, keystorePath, keystorePassword, truststorePath, truststorePassword, idpNotToSync);
     }
 
-    public void postInit(KeycloakSessionFactory factory) {
+    public void postInit(KeycloakSessionFactory arg0) {
         // empty
     }
 }

@@ -79,8 +79,6 @@ public class MCPEventListenerProvider implements EventListenerProvider {
     private final TypeReference<ArrayList<String>> arrayListTypeReference = new TypeReference<>() {};
     private final String servicePath;
 
-    private final CloseableHttpClient httpClient;
-
     public MCPEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
         this.session = session;
         this.serverRoot = serverRoot;
@@ -90,18 +88,12 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         this.truststorePassword = truststorePassword;
         this.idpNotToSync = idpNotToSync;
         this.servicePath = serverRoot + "/service/";
-        this.httpClient = buildHttpClient();
     }
 
     @Override
     public void close() {
-        if (httpClient != null) {
-            try {
-                httpClient.close();
-            } catch (IOException e) {
-                log.error("HttpClient could not be closed", e);
-            }
-        }
+        // not needed
+        
     }
 
     @Override
@@ -140,97 +132,101 @@ public class MCPEventListenerProvider implements EventListenerProvider {
 
         List<String> userRoles = new ArrayList<>();
         List<String> actingOnBehalfOf = new ArrayList<>();
-        PKIIdentity pkiIdentity = null;
-        String userUid = null;
+        try (CloseableHttpClient httpClient = buildHttpClient()) {
+            PKIIdentity pkiIdentity = null;
+            String userUid = null;
 
-        if (event.getRealmId() != null && event.getUserId() != null) {
-            realm = session.realms().getRealm(event.getRealmId());
-            user = session.users().getUserById(realm, event.getUserId());
-            // TODO: this should be removed when we move to the new implementation of the MSR
-            // check that it is actually a user
-            if (user != null && user.getUsername().contains(":user:")) {
-                // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
-                List<String> uidList = user.getAttributes().get("uid");
-                if (uidList == null || uidList.isEmpty()) {
-                    pkiIdentity = getPKIIdentity(user.getUsername(), user, httpClient);
-                    userUid = pkiIdentity.getDn();
+            if (event.getRealmId() != null && event.getUserId() != null) {
+                realm = session.realms().getRealm(event.getRealmId());
+                user = session.users().getUserById(realm, event.getUserId());
+                // TODO: this should be removed when we move to the new implementation of the MSR
+                // check that it is actually a user
+                if (user != null && user.getUsername().contains(":user:")) {
+                    // Get the roles and the organisations that the user can act on behalf of
+                    getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+                    List<String> uidList = user.getAttributes().get("uid");
+                    if (uidList == null || uidList.isEmpty()) {
+                        pkiIdentity = getPKIIdentity(user.getUsername(), user, httpClient);
+                        userUid = pkiIdentity.getDn();
+                    }
                 }
+
             }
 
-        }
+            log.info("event info: " + sb);
 
-        log.info("event info: " + sb);
-
-        // Only users coming from an identity provider is sync'ed.
-        if (identityProvider == null) {
-            log.info("no identity provider found for this user, so sync skipped!");
-            return;
-        }
-
-        // we skip certain identity providers
-        if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
-            log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
-            return;
-        }
-
-        if (event.getRealmId() != null && event.getUserId() != null && user != null) {
-            User mcUser = new User();
-            mcUser.setEmail(user.getEmail());
-            mcUser.setFirstName(user.getFirstName());
-            mcUser.setLastName(user.getLastName());
-            // The username is in reality a mrn...
-            mcUser.setMrn(user.getUsername());
-            String orgMrn = null;
-            List<String> orgList = user.getAttributes().get("org");
-            if (orgList != null && !orgList.isEmpty()) {
-                orgMrn = orgList.get(0);
-            }
-            if (orgMrn == null || orgMrn.isEmpty()) {
-                log.warn("No org MRN found, skipping user sync");
+            // Only users coming from an identity provider is sync'ed.
+            if (identityProvider == null) {
+                log.info("no identity provider found for this user, so sync skipped!");
                 return;
             }
-            List<String> permissionsList = user.getAttributes().get("permissions");
-            if (permissionsList != null && !permissionsList.isEmpty()) {
-                mcUser.setPermissions(String.join(", ", permissionsList));
-            }
-            // in case the user comes from an Identity Provider that hosts multiple organizations, the organization is
-            // not always known, so some extra info is/can be given, which is then used for sync
-            List<String> orgNameList = user.getAttributes().get("org-name");
-            String orgName = null;
-            if (orgNameList != null && !orgNameList.isEmpty()) {
-                orgName = orgNameList.get(0);
-            }
-            List<String> orgAddressList = user.getAttributes().get("org-address");
-            String orgAddress = null;
-            if (orgAddressList != null && !orgAddressList.isEmpty()) {
-                orgAddress = orgAddressList.get(0);
-            }
-            // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
-            // in the orgName. Also puts a dummy value in the orgAddress if needed.
-            if (orgName != null && MRN_PATTERN.matcher(orgName).matches()) {
-                int idx = orgMrn.lastIndexOf(':') + 1;
-                orgName = orgMrn.substring(idx);
-                if (orgAddress == null || orgAddress.isEmpty()) {
-                    orgAddress = "A round the corner, The Seven Seas";
-                }
-            }
-            if (user.getAttributes() != null) {
-                for (Map.Entry<String, List<String>> e : user.getAttributes().entrySet()) {
-                    log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
-                }
-            }
-            sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
 
-            // TODO: this should be removed when we move to the new implementation of the MSR
-            // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
-            if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
-                // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+            // we skip certain identity providers
+            if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
+                log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
+                return;
             }
-            if ((pkiIdentity == null || userUid == null || userUid.equals("")) && user.getUsername().contains(":user:")) {
-                getPKIIdentity(user.getUsername(), user, httpClient);
+
+            if (event.getRealmId() != null && event.getUserId() != null && user != null) {
+                User mcUser = new User();
+                mcUser.setEmail(user.getEmail());
+                mcUser.setFirstName(user.getFirstName());
+                mcUser.setLastName(user.getLastName());
+                // The username is in reality a mrn...
+                mcUser.setMrn(user.getUsername());
+                String orgMrn = null;
+                List<String> orgList = user.getAttributes().get("org");
+                if (orgList != null && !orgList.isEmpty()) {
+                    orgMrn = orgList.get(0);
+                }
+                if (orgMrn == null || orgMrn.isEmpty()) {
+                    log.warn("No org MRN found, skipping user sync");
+                    return;
+                }
+                List<String> permissionsList = user.getAttributes().get("permissions");
+                if (permissionsList != null && !permissionsList.isEmpty()) {
+                    mcUser.setPermissions(String.join(", ", permissionsList));
+                }
+                // in case the user comes from an Identity Provider that hosts multiple organizations, the organization is
+                // not always known, so some extra info is/can be given, which is then used for sync
+                List<String> orgNameList = user.getAttributes().get("org-name");
+                String orgName = null;
+                if (orgNameList != null && !orgNameList.isEmpty()) {
+                    orgName = orgNameList.get(0);
+                }
+                List<String> orgAddressList = user.getAttributes().get("org-address");
+                String orgAddress = null;
+                if (orgAddressList != null && !orgAddressList.isEmpty()) {
+                    orgAddress = orgAddressList.get(0);
+                }
+                // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
+                // in the orgName. Also puts a dummy value in the orgAddress if needed.
+                if (orgName != null && MRN_PATTERN.matcher(orgName).matches()) {
+                    int idx = orgMrn.lastIndexOf(':') + 1;
+                    orgName = orgMrn.substring(idx);
+                    if (orgAddress == null || orgAddress.isEmpty()) {
+                        orgAddress = "A round the corner, The Seven Seas";
+                    }
+                }
+                if (user.getAttributes() != null) {
+                    for (Map.Entry<String, List<String>> e : user.getAttributes().entrySet()) {
+                        log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
+                    }
+                }
+                sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
+
+                // TODO: this should be removed when we move to the new implementation of the MSR
+                // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
+                if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
+                    // Get the roles and the organisations that the user can act on behalf of
+                    getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+                }
+                if ((pkiIdentity == null || userUid == null || userUid.equals("")) && user.getUsername().contains(":user:")) {
+                    getPKIIdentity(user.getUsername(), user, httpClient);
+                }
             }
+        } catch (IOException e) {
+            log.error("Could not close HTTP client", e);
         }
     }
 
@@ -335,24 +331,32 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             uri += "?org-name=" + URLEncoder.encode(orgName, StandardCharsets.UTF_8) + "&org-address=" + URLEncoder.encode(orgAddress, StandardCharsets.UTF_8);
         }
         HttpPost post = new HttpPost(uri);
+        CloseableHttpResponse response = null;
         try {
             String serializedUser = JsonSerialization.writeValueAsString(user);
             StringEntity input = new StringEntity(serializedUser, ContentType.APPLICATION_JSON);
             post.setEntity(input);
             log.info("user json: " + serializedUser);
             log.info("uri: " + uri);
-            try (CloseableHttpResponse response = client.execute(post)) {
-                int status = response.getCode();
-                HttpEntity entity = response.getEntity();
-                if (status != 200) {
-                    String json = getContent(entity);
-                    log.errorf("User sync failed. Bad status: %s response: %s", status, json);
-                } else {
-                    log.info("User sync'ed!");
-                }
+            response = client.execute(post);
+            int status = response.getCode();
+            HttpEntity entity = response.getEntity();
+            if (status != 200) {
+                String json = getContent(entity);
+                log.errorf("User sync failed. Bad status: %s response: %s", status, json);
+            } else {
+                log.info("User sync'ed!");
             }
         } catch (IOException e) {
-            log.error("User update request failed", e);
+            log.error("Could not send user update request", e);
+        } finally {
+            try {
+                if (response != null) {
+                    response.close();
+                }
+            } catch (IOException e) {
+                log.error("Could not close user update response", e);
+            }
         }
     }
 
@@ -425,6 +429,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
     @Override
     public void onEvent(AdminEvent event, boolean includeRepresentation) {
         // not needed
+        
     }
 
 }
