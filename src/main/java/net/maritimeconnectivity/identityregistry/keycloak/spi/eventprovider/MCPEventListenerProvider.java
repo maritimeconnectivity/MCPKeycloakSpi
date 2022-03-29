@@ -76,7 +76,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
     private final String truststorePassword;
     private final String[] idpNotToSync;
 
-    private final TypeReference<ArrayList<String>> arrayListTypeReference = new TypeReference<ArrayList<String>>() {};
+    private final TypeReference<ArrayList<String>> arrayListTypeReference = new TypeReference<>() {};
     private final String servicePath;
 
     public MCPEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
@@ -418,6 +418,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         if (trustStore != null) {
             sslConnectionSocketFactoryBuilder.setHostnameVerifier(new NoopHostnameVerifier());
         }
+
         SSLConnectionSocketFactory sslSocketFactory = sslConnectionSocketFactoryBuilder.build();
         HttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setSSLSocketFactory(sslSocketFactory)
