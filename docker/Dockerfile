@@ -1,7 +1,7 @@
 # Run like this:
 # docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e DB_DATABASE=kcdb -e DB_USERNAME=kcuser -e DB_PASSWORD=kcpassword -e DB_PORT=3306 -e DB_ADDR=localhost dmadk/keycloak-mysql-mc-ha:latest
 #
-FROM quay.io/keycloak/keycloak:16.1.0
+FROM quay.io/keycloak/keycloak:16.1.1
 
 ADD docker-entrypoint.sh /opt/jboss/tools/
 
