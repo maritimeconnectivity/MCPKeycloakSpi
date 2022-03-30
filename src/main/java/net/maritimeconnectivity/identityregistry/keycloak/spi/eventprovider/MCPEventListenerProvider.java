@@ -116,7 +116,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                 if ("identity_provider".equals(e.getKey())) {
                     identityProvider = e.getValue();
                 }
-                if (log.isInfoEnabled()) {
+                if (log.isDebugEnabled()) {
                     sb.append(", ").append(e.getKey());
                     if (e.getValue() == null || e.getValue().indexOf(' ') == -1) {
                         sb.append("=").append(e.getValue());
@@ -153,17 +153,17 @@ public class MCPEventListenerProvider implements EventListenerProvider {
 
             }
 
-            log.info("event info: " + sb);
+            log.debug("event info: " + sb);
 
             // Only users coming from an identity provider is sync'ed.
             if (identityProvider == null) {
-                log.info("no identity provider found for this user, so sync skipped!");
+                log.debug("no identity provider found for this user, so sync skipped!");
                 return;
             }
 
             // we skip certain identity providers
             if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
-                log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
+                log.debugf("The identity provider \"%s\" is setup not to be sync'ed, so sync skipped!", identityProvider);
                 return;
             }
 
@@ -210,7 +210,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                 }
                 if (user.getAttributes() != null) {
                     for (Map.Entry<String, List<String>> e : user.getAttributes().entrySet()) {
-                        log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
+                        log.debugf("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
                     }
                 }
                 sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
@@ -336,8 +336,8 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             String serializedUser = JsonSerialization.writeValueAsString(user);
             StringEntity input = new StringEntity(serializedUser, ContentType.APPLICATION_JSON);
             post.setEntity(input);
-            log.info("user json: " + serializedUser);
-            log.info("uri: " + uri);
+            log.debug("user json: " + serializedUser);
+            log.debug("uri: " + uri);
             response = client.execute(post);
             int status = response.getCode();
             HttpEntity entity = response.getEntity();
@@ -372,8 +372,8 @@ public class MCPEventListenerProvider implements EventListenerProvider {
     }
 
     protected CloseableHttpClient buildHttpClient() {
-        log.info("keystore path: " + keystorePath);
-        log.info("truststorePath path: " + truststorePath);
+        log.debug("keystore path: " + keystorePath);
+        log.debug("truststorePath path: " + truststorePath);
         KeyStore keyStore;
         KeyStore trustStore = null;
         FileInputStream instreamTruststore = null;
