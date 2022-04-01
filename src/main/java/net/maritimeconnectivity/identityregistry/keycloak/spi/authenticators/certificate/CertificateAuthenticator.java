@@ -125,35 +125,35 @@ public class CertificateAuthenticator implements Authenticator {
 
     private void setUserAttributes(AuthenticationFlowContext authenticationFlowContext, PKIIdentity user, String mrn, String orgMrn, String permissions, String uid, String mrnSubsidiary, String homeMmsUrl, UserModel userModel) {
         if (permissions != null && !permissions.trim().isEmpty()) {
-            log.info("About to set permissions attr to: " + permissions);
+            log.debug("About to set permissions attr to: " + permissions);
             userModel.setAttribute("permissions", Collections.singletonList(permissions));
-            log.info("Just set permissions attr to: " + permissions);
+            log.debug("Just set permissions attr to: " + permissions);
         }
 
-        log.info("About to set mrn attr to: " + mrn);
+        log.debug("About to set mrn attr to: " + mrn);
         userModel.setAttribute("mrn", Collections.singletonList(mrn));
-        log.info("Just set mrn attr to: " + mrn);
+        log.debug("Just set mrn attr to: " + mrn);
 
-        log.infof("About to set uid attr to: " + uid);
+        log.debug("About to set uid attr to: " + uid);
         userModel.setAttribute("uid", Collections.singletonList(uid));
-        log.info("Just set uid attr to: " + uid);
+        log.debug("Just set uid attr to: " + uid);
 
         if (!orgMrn.trim().isEmpty()) {
-            log.info("About to set org attr to: " + orgMrn);
+            log.debug("About to set org attr to: " + orgMrn);
             userModel.setAttribute("org", Collections.singletonList(orgMrn));
-            log.info("Just set org attr to: " + orgMrn);
+            log.debug("Just set org attr to: " + orgMrn);
         }
 
         if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
-            log.info("About to set subsidiary_mrn attr to: " + mrnSubsidiary);
+            log.debug("About to set subsidiary_mrn attr to: " + mrnSubsidiary);
             userModel.setAttribute("subsidiary_mrn", Collections.singletonList(mrnSubsidiary));
-            log.info("Just set subsidiary_mrn attr to: " + mrnSubsidiary);
+            log.debug("Just set subsidiary_mrn attr to: " + mrnSubsidiary);
         }
 
         if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
-            log.info("About to set mms_url attr to: " + homeMmsUrl);
+            log.debug("About to set mms_url attr to: " + homeMmsUrl);
             userModel.setAttribute("mms_url", Collections.singletonList(homeMmsUrl));
-            log.info("Just set mms_url attr to: " + homeMmsUrl);
+            log.debug("Just set mms_url attr to: " + homeMmsUrl);
         }
 
         extractNonUserAttributes(user, userModel);

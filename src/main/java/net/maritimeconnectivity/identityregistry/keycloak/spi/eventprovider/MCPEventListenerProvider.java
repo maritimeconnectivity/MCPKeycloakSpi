@@ -18,19 +18,23 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.jbosslog.JBossLog;
 import net.maritimeconnectivity.identityregistry.keycloak.spi.exceptions.McpException;
 import net.maritimeconnectivity.pki.PKIIdentity;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.SSLContexts;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.client5.http.ssl.TrustSelfSignedStrategy;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.ssl.TLS;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.hc.core5.ssl.SSLContexts;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
@@ -44,8 +48,8 @@ import javax.net.ssl.SSLContext;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -72,7 +76,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
     private final String truststorePassword;
     private final String[] idpNotToSync;
 
-    private final TypeReference<ArrayList<String>> arrayListTypeReference = new TypeReference<ArrayList<String>>() {};
+    private final TypeReference<ArrayList<String>> arrayListTypeReference = new TypeReference<>() {};
     private final String servicePath;
 
     public MCPEventListenerProvider(KeycloakSession session, String serverRoot, String keystorePath, String keystorePassword, String truststorePath, String truststorePassword, String[] idpNotToSync) {
@@ -112,7 +116,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                 if ("identity_provider".equals(e.getKey())) {
                     identityProvider = e.getValue();
                 }
-                if (log.isInfoEnabled()) {
+                if (log.isDebugEnabled()) {
                     sb.append(", ").append(e.getKey());
                     if (e.getValue() == null || e.getValue().indexOf(' ') == -1) {
                         sb.append("=").append(e.getValue());
@@ -149,17 +153,17 @@ public class MCPEventListenerProvider implements EventListenerProvider {
 
             }
 
-            log.info("event info: " + sb);
+            log.debug("event info: " + sb);
 
             // Only users coming from an identity provider is sync'ed.
             if (identityProvider == null) {
-                log.info("no identity provider found for this user, so sync skipped!");
+                log.debug("no identity provider found for this user, so sync skipped!");
                 return;
             }
 
             // we skip certain identity providers
             if (Arrays.binarySearch(idpNotToSync, identityProvider.toLowerCase()) >= 0) {
-                log.info("this identity provider is setup not to be sync'ed, so sync skipped!");
+                log.debugf("The identity provider \"%s\" is setup not to be sync'ed, so sync skipped!", identityProvider);
                 return;
             }
 
@@ -206,7 +210,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                 }
                 if (user.getAttributes() != null) {
                     for (Map.Entry<String, List<String>> e : user.getAttributes().entrySet()) {
-                        log.infof("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
+                        log.debugf("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
                     }
                 }
                 sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
@@ -241,10 +245,8 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/roles";
             HttpGet get = new HttpGet(uri);
-            CloseableHttpResponse response;
-            try {
-                response = httpClient.execute(get);
-                int status = response.getStatusLine().getStatusCode();
+            try (CloseableHttpResponse response = httpClient.execute(get)) {
+                int status = response.getCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
                     log.error("Getting user roles failed");
@@ -271,10 +273,8 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/acting-on-behalf-of";
             HttpGet get = new HttpGet(uri);
-            CloseableHttpResponse response;
-            try {
-                response = httpClient.execute(get);
-                int status = response.getStatusLine().getStatusCode();
+            try (CloseableHttpResponse response = httpClient.execute(get)) {
+                int status = response.getCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
                     log.error("Getting acting on behalf of orgs failed");
@@ -300,10 +300,8 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/pki-identity";
             HttpGet get = new HttpGet(uri);
-            CloseableHttpResponse response;
-            try {
-                response = httpClient.execute(get);
-                int status = response.getStatusLine().getStatusCode();
+            try (CloseableHttpResponse response = httpClient.execute(get)) {
+                int status = response.getCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
                     log.error("Getting PKIIdentity of user failed");
@@ -330,24 +328,18 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         }
         String uri = serverRoot + "/x509/api/org/" + orgMrn + "/user-sync/";
         if (orgName != null && orgAddress != null) {
-            try {
-                uri += "?org-name=" + URLEncoder.encode(orgName, "UTF-8") + "&org-address=" + URLEncoder.encode(orgAddress, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                log.error("URL encoding failed", e);
-                return;
-            }
+            uri += "?org-name=" + URLEncoder.encode(orgName, StandardCharsets.UTF_8) + "&org-address=" + URLEncoder.encode(orgAddress, StandardCharsets.UTF_8);
         }
         HttpPost post = new HttpPost(uri);
         CloseableHttpResponse response = null;
         try {
             String serializedUser = JsonSerialization.writeValueAsString(user);
             StringEntity input = new StringEntity(serializedUser, ContentType.APPLICATION_JSON);
-            input.setContentType("application/json");
             post.setEntity(input);
-            log.info("user json: " + serializedUser);
-            log.info("uri: " + uri);
+            log.debug("user json: " + serializedUser);
+            log.debug("uri: " + uri);
             response = client.execute(post);
-            int status = response.getStatusLine().getStatusCode();
+            int status = response.getCode();
             HttpEntity entity = response.getEntity();
             if (status != 200) {
                 String json = getContent(entity);
@@ -380,15 +372,13 @@ public class MCPEventListenerProvider implements EventListenerProvider {
     }
 
     protected CloseableHttpClient buildHttpClient() {
-        log.info("keystore path: " + keystorePath);
-        log.info("truststorePath path: " + truststorePath);
+        log.debug("keystore path: " + keystorePath);
+        log.debug("truststorePath path: " + truststorePath);
         KeyStore keyStore;
         KeyStore trustStore = null;
-        FileInputStream instreamKeystore = null;
         FileInputStream instreamTruststore = null;
-        try {
+        try (FileInputStream instreamKeystore = new FileInputStream(keystorePath)) {
             keyStore = KeyStore.getInstance("jks");
-            instreamKeystore = new FileInputStream(keystorePath);
             keyStore.load(instreamKeystore, keystorePassword.toCharArray());
             if (truststorePath != null && !truststorePath.isEmpty()) {
                 trustStore = KeyStore.getInstance("jks");
@@ -400,14 +390,11 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             throw new McpException(e);
         } finally {
             try {
-                if (instreamKeystore != null) {
-                    instreamKeystore.close();
-                }
                 if (instreamTruststore != null) {
                     instreamTruststore.close();
                 }
             } catch (IOException e) {
-                log.error("Could not close keystore or truststore", e);
+                log.error("Could not close truststore", e);
             }
         }
 
@@ -425,8 +412,18 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             log.error("Could not build ssl context", e);
             throw new McpException(e);
         }
-        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new NoopHostnameVerifier());
-        return HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = SSLConnectionSocketFactoryBuilder.create()
+                .setSslContext(sslcontext)
+                .setTlsVersions(TLS.V_1_2, TLS.V_1_3);
+        if (trustStore != null) {
+            sslConnectionSocketFactoryBuilder.setHostnameVerifier(new NoopHostnameVerifier());
+        }
+
+        SSLConnectionSocketFactory sslSocketFactory = sslConnectionSocketFactoryBuilder.build();
+        HttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(sslSocketFactory)
+                .build();
+        return HttpClients.custom().setConnectionManager(connectionManager).build();
     }
 
     @Override
