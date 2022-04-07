@@ -183,7 +183,7 @@ public class CertificateAuthenticator implements Authenticator {
         if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
             userModel.setAttribute("mmsi", Collections.singletonList(mmsiNumber));
         }
-        if (aisShipType != null && aisShipType.trim().isEmpty()) {
+        if (aisShipType != null && !aisShipType.trim().isEmpty()) {
             userModel.setAttribute("ais_type", Collections.singletonList(aisShipType));
         }
         if (portOfRegister != null && !portOfRegister.trim().isEmpty()) {
