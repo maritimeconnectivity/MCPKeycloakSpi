@@ -18,23 +18,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.jbosslog.JBossLog;
 import net.maritimeconnectivity.identityregistry.keycloak.spi.exceptions.McpException;
 import net.maritimeconnectivity.pki.PKIIdentity;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
-import org.apache.hc.client5.http.ssl.TrustSelfSignedStrategy;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.apache.hc.core5.http.ssl.TLS;
-import org.apache.hc.core5.ssl.SSLContextBuilder;
-import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
@@ -245,8 +242,10 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/roles";
             HttpGet get = new HttpGet(uri);
-            try (CloseableHttpResponse response = httpClient.execute(get)) {
-                int status = response.getCode();
+            CloseableHttpResponse response;
+            try {
+                response = httpClient.execute(get);
+                int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
                     log.error("Getting user roles failed");
@@ -273,8 +272,10 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/acting-on-behalf-of";
             HttpGet get = new HttpGet(uri);
-            try (CloseableHttpResponse response = httpClient.execute(get)) {
-                int status = response.getCode();
+            CloseableHttpResponse response;
+            try {
+                response = httpClient.execute(get);
+                int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
                     log.error("Getting acting on behalf of orgs failed");
@@ -300,8 +301,10 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/pki-identity";
             HttpGet get = new HttpGet(uri);
-            try (CloseableHttpResponse response = httpClient.execute(get)) {
-                int status = response.getCode();
+            CloseableHttpResponse response;
+            try {
+                response = httpClient.execute(get);
+                int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
                     log.error("Getting PKIIdentity of user failed");
@@ -339,7 +342,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             log.debug("user json: " + serializedUser);
             log.debug("uri: " + uri);
             response = client.execute(post);
-            int status = response.getCode();
+            int status = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             if (status != 200) {
                 String json = getContent(entity);
@@ -412,18 +415,13 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             log.error("Could not build ssl context", e);
             throw new McpException(e);
         }
-        SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(sslcontext)
-                .setTlsVersions(TLS.V_1_2, TLS.V_1_3);
+        SSLConnectionSocketFactory sslsf;
         if (trustStore != null) {
-            sslConnectionSocketFactoryBuilder.setHostnameVerifier(new NoopHostnameVerifier());
+            sslsf = new SSLConnectionSocketFactory(sslcontext, new NoopHostnameVerifier());
+        } else {
+            sslsf = new SSLConnectionSocketFactory(sslcontext, new DefaultHostnameVerifier());
         }
-
-        SSLConnectionSocketFactory sslSocketFactory = sslConnectionSocketFactoryBuilder.build();
-        HttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
-                .build();
-        return HttpClients.custom().setConnectionManager(connectionManager).build();
+        return HttpClients.custom().setSSLSocketFactory(sslsf).build();
     }
 
     @Override
