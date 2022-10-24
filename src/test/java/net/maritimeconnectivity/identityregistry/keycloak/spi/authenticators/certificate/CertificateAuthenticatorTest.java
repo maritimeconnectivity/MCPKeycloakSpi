@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -167,8 +165,8 @@ class CertificateAuthenticatorTest {
      * @return
      */
     public static String loadTxtFile(String path) {
-        try (Stream<String> stringStream = Files.lines(Paths.get(path))) {
-            return stringStream.collect(Collectors.joining("\n"));
+        try {
+            return Files.readString(Paths.get(path));
         } catch (IOException e) {
             fail("Loading Certificate from file failed!", e);
             throw new RuntimeException(e);
