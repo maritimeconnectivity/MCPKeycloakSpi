@@ -32,5 +32,6 @@ ENV NOSYNC_IDPS certificates,users
 ENV MODE start-dev
 
 COPY --from=builder /opt/keycloak /opt/keycloak
+COPY --from=builder /mc-eventprovider-conf /mc-eventprovider-conf
 
 CMD ["$MODE", "--spi-event-listener-provider-mc-event-listener-server-root=$MC_IDREG_SERVER_ROOT", "--spi-event-listener-provider-mc-event-listener-keystore-path=$SYNC_KEYSTORE_PATH", "--spi-event-listener-provider-mc-event-listener-keystore-password=$SYNC_KEYSTORE_PASSWORD", "--spi-event-listener-provider-mc-event-listener-truststore-path=$SYNC_TRUSTSTORE_PATH", "--spi-event-listener-provider-mc-event-listener-truststore-password=$SYNC_TRUSTSTORE_PASSWORD", "--spi-event-listener-provider-mc-event-listener-idp-not-to-sync=$NOSYNC_IDPS"]
