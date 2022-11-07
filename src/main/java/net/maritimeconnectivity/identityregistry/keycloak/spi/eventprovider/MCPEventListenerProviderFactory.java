@@ -14,13 +14,15 @@
  */
 package net.maritimeconnectivity.identityregistry.keycloak.spi.eventprovider;
 
-import org.keycloak.Config.Scope;
+import org.keycloak.Config;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
 public class MCPEventListenerProviderFactory implements EventListenerProviderFactory {
+
+    public static final String ID = "mcpEventListener";
 
     private String serverRoot = "";
     private String keystorePath = "";
@@ -29,11 +31,13 @@ public class MCPEventListenerProviderFactory implements EventListenerProviderFac
     private String truststorePassword = "";
     private String[] idpNotToSync = null;
 
+    @Override
     public String getId() {
-        return "mc-event-listener";
+        return ID;
     }
 
-    public void init(Scope config) {
+    @Override
+    public void init(Config.Scope config) {
         serverRoot = config.get("server-root");
         keystorePath = config.get("keystore-path");
         keystorePassword = config.get("keystore-password");
@@ -45,14 +49,17 @@ public class MCPEventListenerProviderFactory implements EventListenerProviderFac
         }
     }
 
+    @Override
     public void close() {
         // empty
     }
 
+    @Override
     public EventListenerProvider create(KeycloakSession session) {
         return new MCPEventListenerProvider(session, serverRoot, keystorePath, keystorePassword, truststorePath, truststorePassword, idpNotToSync);
     }
 
+    @Override
     public void postInit(KeycloakSessionFactory arg0) {
         // empty
     }
