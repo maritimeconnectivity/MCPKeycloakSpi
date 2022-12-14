@@ -144,7 +144,8 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                     List<String> uidList = user.getAttributes().get("uid");
                     if (uidList == null || uidList.isEmpty()) {
                         pkiIdentity = getPKIIdentity(user.getUsername(), user, httpClient);
-                        userUid = pkiIdentity.getDn();
+                        if (pkiIdentity != null)
+                            userUid = pkiIdentity.getDn();
                     }
                 }
 
