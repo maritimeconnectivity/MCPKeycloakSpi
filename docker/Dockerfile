@@ -1,7 +1,7 @@
 # Run like this:
 # docker run --name keycloak -v /path/to/config-directory/on/machine:/mc-eventprovider-conf -e DB_DATABASE=kcdb -e DB_USERNAME=kcuser -e DB_PASSWORD=kcpassword -e DB_PORT=3306 -e DB_ADDR=localhost dmadk/keycloak-mysql-mc-ha:latest
 #
-FROM quay.io/keycloak/keycloak:20.0.2
+FROM quay.io/keycloak/keycloak:20.0.3
 
 # Set the environmental variables
 ENV KC_DB postgres
