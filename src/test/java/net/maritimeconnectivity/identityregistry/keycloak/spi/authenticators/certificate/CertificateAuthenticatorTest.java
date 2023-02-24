@@ -14,11 +14,11 @@
  */
 package net.maritimeconnectivity.identityregistry.keycloak.spi.authenticators.certificate;
 
-import org.jboss.resteasy.spi.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowException;
+import org.keycloak.http.HttpRequest;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -166,11 +167,10 @@ class CertificateAuthenticatorTest {
      * @return
      */
     public static String loadTxtFile(String path) {
-        try {
-            return Files.lines(Paths.get(path)).collect(Collectors.joining("\n"));
+        try (Stream<String> stringStream = Files.lines(Paths.get(path))) {
+            return stringStream.collect(Collectors.joining("\n"));
         } catch (IOException e) {
-            e.printStackTrace();
-            fail("Loading Certificate from file failed!");
+            fail("Loading Certificate from file failed!", e);
             throw new RuntimeException(e);
         }
     }
