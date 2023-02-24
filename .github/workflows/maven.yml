@@ -19,25 +19,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B -U clean install && cp target/mcp-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar docker/
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: docker-folder
-        path: docker
-        retention-days: 1
-
-  build_docker_image:
-
-    needs: build
-
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: docker-folder
-        path: docker
+      run: mvn -B -U clean install && cp target/mcp-identityregistry-keycloak-spi-latest.jar docker/
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
     - name: Login to GHCR
