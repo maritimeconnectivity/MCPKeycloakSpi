@@ -21,7 +21,6 @@ jobs:
     - name: Build with Maven
       run: mvn -B -U clean install && cp target/mcp-identityregistry-keycloak-spi-latest-jar-with-dependencies.jar docker/
     - name: Upload artifacts
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: actions/upload-artifact@v3
       with:
         name: docker-folder
