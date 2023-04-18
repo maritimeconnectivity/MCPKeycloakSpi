@@ -3,7 +3,7 @@
 #
 FROM curlimages/curl:7.88.1 AS curl
 
-RUN curl -o /tmp/mcp-pki.jar -sL 'https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=net.maritimeconnectivity.pki&a=mcp-pki&v=2.0.0-SNAPSHOT'
+RUN curl -o /tmp/mcp-pki.jar -sL 'https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=net.maritimeconnectivity.pki&a=mcp-pki&v=1.2.0-SNAPSHOT'
 
 FROM quay.io/keycloak/keycloak:21.0.2
 
