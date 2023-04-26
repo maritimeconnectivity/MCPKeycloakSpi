@@ -34,4 +34,4 @@ ADD --chown=1000:0 mcp-identityregistry-keycloak-spi-latest.jar /opt/keycloak/pr
 
 RUN /opt/keycloak/bin/kc.sh build
 
-CMD ["start", "--optimized"]
+CMD ["--spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true", "start"]
