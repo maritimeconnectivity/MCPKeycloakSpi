@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/MaritimeConnectivityPlatform/MCPKeycloakSpi.svg?branch=master)](https://travis-ci.org/MaritimeConnectivityPlatform/MCPKeycloakSpi)
+[![Java CI with Maven](https://github.com/maritimeconnectivity/MCPKeycloakSpi/actions/workflows/maven.yml/badge.svg)](https://github.com/maritimeconnectivity/MCPKeycloakSpi/actions/workflows/maven.yml)
 
 # Maritime Connectivity Platform implementation of Keycloak SPI
 
