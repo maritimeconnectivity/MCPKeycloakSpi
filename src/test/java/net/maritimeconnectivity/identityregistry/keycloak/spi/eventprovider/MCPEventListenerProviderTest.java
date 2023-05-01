@@ -80,7 +80,7 @@ class MCPEventListenerProviderTest {
         // Set an unsupported type that should result in no actions
         given(this.mockedEvent.getType()).willReturn(EventType.CLIENT_LOGIN);
 
-        mcpEventListenerProvider = new MCPEventListenerProvider(null, null, null, null, null, null, null);
+        mcpEventListenerProvider = new MCPEventListenerProvider(null, null, "src/test/resources/keystore.jks", "changeit", null, null, null);
         mcpEventListenerProvider.onEvent(this.mockedEvent);
 
         verify(mockedEvent, times(1)).getType();
