@@ -3,6 +3,7 @@
 #
 FROM curlimages/curl:7.88.1 AS curl
 
+# Download latest snapshot of MCP PKI
 RUN curl -o /tmp/mcp-pki.jar -sL 'https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=net.maritimeconnectivity.pki&a=mcp-pki&v=1.2.0-SNAPSHOT'
 
 FROM quay.io/keycloak/keycloak:21.1.1
@@ -28,7 +29,7 @@ USER root
 RUN mkdir -p /mc-eventprovider-conf && chown 1000:0 /mc-eventprovider-conf
 
 USER 1000
-# Download latest snapshot of MCP PKI
+
 COPY --from=curl --chown=1000:0 /tmp/mcp-pki.jar /opt/keycloak/providers/mcp-pki.jar
 ADD --chown=1000:0 mcp-identityregistry-keycloak-spi-latest.jar /opt/keycloak/providers/
 
