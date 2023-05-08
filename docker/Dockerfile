@@ -4,7 +4,7 @@
 FROM curlimages/curl:7.88.1 AS curl
 
 # Download latest snapshot of MCP PKI
-RUN curl -o /tmp/mcp-pki.jar -sL 'https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=net.maritimeconnectivity.pki&a=mcp-pki&v=1.2.0-SNAPSHOT'
+RUN curl -o /tmp/mcp-pki.jar -sL 'https://repo1.maven.org/maven2/net/maritimeconnectivity/pki/mcp-pki/1.2.0-RC1/mcp-pki-1.2.0-RC1.jar'
 
 FROM quay.io/keycloak/keycloak:21.1.1
 
