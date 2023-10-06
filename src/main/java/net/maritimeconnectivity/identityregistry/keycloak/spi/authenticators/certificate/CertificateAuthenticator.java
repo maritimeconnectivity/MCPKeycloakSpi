@@ -91,7 +91,7 @@ public class CertificateAuthenticator implements Authenticator {
         // Try to find existing user
         UserModel existingUser = session.users().getUserByUsername(realm, mrn);
         if (existingUser == null) {
-            log.infof("No duplication detected. Creating account for user '%s'.", mrn);
+            log.debugf("No duplication detected. Creating account for user '%s'.", mrn);
 
             UserModel federatedUser = session.users().addUser(realm, mrn);
             federatedUser.setEnabled(true);
@@ -103,7 +103,7 @@ public class CertificateAuthenticator implements Authenticator {
 
             setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, uid, mrnSubsidiary, homeMmsUrl, federatedUser);
         } else {
-            log.infof("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
+            log.debugf("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
             if (email != null && !email.trim().isEmpty()) {
                 existingUser.setEmail(email);
@@ -120,7 +120,7 @@ public class CertificateAuthenticator implements Authenticator {
             setUserAttributes(authenticationFlowContext, user, mrn, orgMrn, permissions, uid, mrnSubsidiary, homeMmsUrl, existingUser);
         }
         authenticationFlowContext.success();
-        log.info("Authentication flow successfully completed!");
+        log.debug("Authentication flow successfully completed!");
     }
 
     private void setUserAttributes(AuthenticationFlowContext authenticationFlowContext, PKIIdentity user, String mrn, String orgMrn, String permissions, String uid, String mrnSubsidiary, String homeMmsUrl, UserModel userModel) {
