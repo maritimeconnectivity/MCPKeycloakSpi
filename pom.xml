@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.maritimeconnectivity.identityregistry.keycloak.spi</groupId>
   <artifactId>mcp-identityregistry-keycloak-spi</artifactId>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <packaging>jar</packaging>
   <name>mcp-identityregistry-keycloak-spi</name>
   <url>https://maritimeconnectivity.net</url>
