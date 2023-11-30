@@ -16,7 +16,6 @@ package net.maritimeconnectivity.identityregistry.keycloak.spi.eventprovider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.jbosslog.JBossLog;
-import net.maritimeconnectivity.identityregistry.keycloak.spi.exceptions.McpException;
 import net.maritimeconnectivity.pki.PKIIdentity;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -375,7 +374,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             entity.writeTo(os);
         } catch (IOException e) {
             log.error("Could not get content", e);
-            throw new McpException(e);
+            return "";
         }
         return os.toString();
     }
@@ -396,7 +395,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
             log.error("Could not load keystore or truststore", e);
-            throw new McpException(e);
+            return null;
         } finally {
             try {
                 if (instreamTruststore != null) {
@@ -419,7 +418,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             sslcontext = sslContextBuilder.build();
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
             log.error("Could not build ssl context", e);
-            throw new McpException(e);
+            return null;
         }
         SSLConnectionSocketFactory sslsf;
         if (trustStore != null) {
