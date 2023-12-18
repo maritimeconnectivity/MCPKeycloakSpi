@@ -14,6 +14,7 @@
  */
 package net.maritimeconnectivity.identityregistry.keycloak.spi.authenticators.certificate;
 
+import jakarta.ws.rs.core.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -24,7 +25,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 
-import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
