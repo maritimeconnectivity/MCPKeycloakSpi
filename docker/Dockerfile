@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:21.1.2
+FROM quay.io/keycloak/keycloak:23.0.6
 
 # Set the environmental variables
 ENV KC_DB postgres
@@ -22,7 +22,8 @@ RUN mkdir -p /mc-eventprovider-conf && chown 1000:0 /mc-eventprovider-conf
 
 USER 1000
 
-ADD --chown=1000:0 https://repo1.maven.org/maven2/net/maritimeconnectivity/pki/mcp-pki/1.2.0/mcp-pki-1.2.0.jar /opt/keycloak/providers/mcp-pki.jar
+# Download latest snapshot
+ADD --chown=1000:0 'https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=net.maritimeconnectivity.pki&a=mcp-pki&v=1.3.0-SNAPSHOT' /opt/keycloak/providers/mcp-pki.jar
 ADD --chown=1000:0 mcp-identityregistry-keycloak-spi-latest.jar /opt/keycloak/providers/
 
 RUN /opt/keycloak/bin/kc.sh build
