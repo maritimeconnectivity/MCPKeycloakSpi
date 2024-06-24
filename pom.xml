@@ -9,7 +9,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <keycloak.version>25.0.0</keycloak.version>
+    <keycloak.version>25.0.1</keycloak.version>
     <maven.compiler.release>21</maven.compiler.release>
     <junit-jupiter.version>5.10.1</junit-jupiter.version>
   </properties>
