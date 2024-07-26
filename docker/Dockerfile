@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:25.0.1
+FROM quay.io/keycloak/keycloak:25.0.2
 
 # Set the environmental variables
 ENV KC_DB postgres
