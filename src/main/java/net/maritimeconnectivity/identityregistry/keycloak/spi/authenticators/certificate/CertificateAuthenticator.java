@@ -52,7 +52,7 @@ public class CertificateAuthenticator implements Authenticator {
             throw new AuthenticationFlowException("No client certificate detected!", AuthenticationFlowError.INVALID_USER);
         }
         // Convert the header string to a certificate
-        X509Certificate userCertificate = CertificateHandler.getCertFromNginxHeader(certStrList.get(0));
+        X509Certificate userCertificate = CertificateHandler.getCertFromNginxHeader(certStrList.getFirst());
         if (userCertificate == null) {
             log.warn("Could not read client certificate!");
             throw new AuthenticationFlowException("Could not read client certificate!", AuthenticationFlowError.INVALID_USER);

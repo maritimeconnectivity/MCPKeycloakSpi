@@ -181,7 +181,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             String orgMrn = null;
             List<String> orgList = user.getAttributes().get("org");
             if (orgList != null && !orgList.isEmpty()) {
-                orgMrn = orgList.get(0);
+                orgMrn = orgList.getFirst();
             }
             if (orgMrn == null || orgMrn.isEmpty()) {
                 log.warn("No org MRN found, skipping user sync");
@@ -196,12 +196,12 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             List<String> orgNameList = user.getAttributes().get("org-name");
             String orgName = null;
             if (orgNameList != null && !orgNameList.isEmpty()) {
-                orgName = orgNameList.get(0);
+                orgName = orgNameList.getFirst();
             }
             List<String> orgAddressList = user.getAttributes().get("org-address");
             String orgAddress = null;
             if (orgAddressList != null && !orgAddressList.isEmpty()) {
-                orgAddress = orgAddressList.get(0);
+                orgAddress = orgAddressList.getFirst();
             }
             // Check if orgName is an MRN, in which case we extract the org shortname from the MRN and puts it
             // in the orgName. Also puts a dummy value in the orgAddress if needed.
@@ -225,7 +225,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                 // Get the roles and the organisations that the user can act on behalf of
                 getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
             }
-            if ((pkiIdentity == null || userUid == null || userUid.equals("")) && user.getUsername().contains(":user:")) {
+            if ((pkiIdentity == null || userUid == null || userUid.isEmpty()) && user.getUsername().contains(":user:")) {
                 getPKIIdentity(user.getUsername(), user, httpClient);
             }
         }
