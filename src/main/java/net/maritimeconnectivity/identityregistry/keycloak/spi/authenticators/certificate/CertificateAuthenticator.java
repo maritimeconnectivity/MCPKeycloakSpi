@@ -27,7 +27,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
@@ -53,12 +52,7 @@ public class CertificateAuthenticator implements Authenticator {
             throw new AuthenticationFlowException("No client certificate detected!", AuthenticationFlowError.INVALID_USER);
         }
         // Convert the header string to a certificate
-        X509Certificate userCertificate = null;
-        try {
-            userCertificate = CertificateHandler.getCertFromNginxHeader(certStrList.get(0));
-        } catch (UnsupportedEncodingException e) {
-            log.error("Client certificate could not be parsed", e);
-        }
+        X509Certificate userCertificate = CertificateHandler.getCertFromNginxHeader(certStrList.get(0));
         if (userCertificate == null) {
             log.warn("Could not read client certificate!");
             throw new AuthenticationFlowException("Could not read client certificate!", AuthenticationFlowError.INVALID_USER);
