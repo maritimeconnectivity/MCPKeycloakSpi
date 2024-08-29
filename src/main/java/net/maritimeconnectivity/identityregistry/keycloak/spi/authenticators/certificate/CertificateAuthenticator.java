@@ -26,6 +26,7 @@ import org.keycloak.http.HttpRequest;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.utils.StringUtil;
 
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -89,7 +90,7 @@ public class CertificateAuthenticator implements Authenticator {
 
             UserModel federatedUser = session.users().addUser(realm, mrn);
             federatedUser.setEnabled(true);
-            if (email != null && !email.trim().isEmpty()) {
+            if (StringUtil.isNotBlank(email)) {
                 federatedUser.setEmail(email);
             }
             federatedUser.setFirstName(user.getFirstName());
@@ -99,7 +100,7 @@ public class CertificateAuthenticator implements Authenticator {
         } else {
             log.debugf("Existing user detected with %s '%s' .", UserModel.USERNAME, existingUser.getUsername());
 
-            if (email != null && !email.trim().isEmpty()) {
+            if (StringUtil.isNotBlank(email)) {
                 existingUser.setEmail(email);
             } else if (existingUser.getEmail() != null) {
                 existingUser.setEmail(null);
@@ -118,7 +119,7 @@ public class CertificateAuthenticator implements Authenticator {
     }
 
     private void setUserAttributes(AuthenticationFlowContext authenticationFlowContext, PKIIdentity user, String mrn, String orgMrn, String permissions, String uid, String mrnSubsidiary, String homeMmsUrl, UserModel userModel) {
-        if (permissions != null && !permissions.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(permissions)) {
             log.debug("About to set permissions attr to: " + permissions);
             userModel.setAttribute("permissions", Collections.singletonList(permissions));
             log.debug("Just set permissions attr to: " + permissions);
@@ -132,19 +133,19 @@ public class CertificateAuthenticator implements Authenticator {
         userModel.setAttribute("uid", Collections.singletonList(uid));
         log.debug("Just set uid attr to: " + uid);
 
-        if (!orgMrn.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(orgMrn)) {
             log.debug("About to set org attr to: " + orgMrn);
             userModel.setAttribute("org", Collections.singletonList(orgMrn));
             log.debug("Just set org attr to: " + orgMrn);
         }
 
-        if (mrnSubsidiary != null && !mrnSubsidiary.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(mrnSubsidiary)) {
             log.debug("About to set subsidiary_mrn attr to: " + mrnSubsidiary);
             userModel.setAttribute("subsidiary_mrn", Collections.singletonList(mrnSubsidiary));
             log.debug("Just set subsidiary_mrn attr to: " + mrnSubsidiary);
         }
 
-        if (homeMmsUrl != null && !homeMmsUrl.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(homeMmsUrl)) {
             log.debug("About to set mms_url attr to: " + homeMmsUrl);
             userModel.setAttribute("mms_url", Collections.singletonList(homeMmsUrl));
             log.debug("Just set mms_url attr to: " + homeMmsUrl);
@@ -165,28 +166,28 @@ public class CertificateAuthenticator implements Authenticator {
         String shipMrn = user.getShipMrn();
         String url = user.getUrl();
 
-        if (flagState != null && !flagState.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(flagState)) {
             userModel.setAttribute("flagstate", Collections.singletonList(flagState));
         }
-        if (callSign != null && !callSign.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(callSign)) {
             userModel.setAttribute("callsign", Collections.singletonList(callSign));
         }
-        if (imoNumber != null && !imoNumber.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(imoNumber)) {
             userModel.setAttribute("imo_number", Collections.singletonList(imoNumber));
         }
-        if (mmsiNumber != null && !mmsiNumber.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(mmsiNumber)) {
             userModel.setAttribute("mmsi", Collections.singletonList(mmsiNumber));
         }
-        if (aisShipType != null && !aisShipType.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(aisShipType)) {
             userModel.setAttribute("ais_type", Collections.singletonList(aisShipType));
         }
-        if (portOfRegister != null && !portOfRegister.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(portOfRegister)) {
             userModel.setAttribute("registered_port", Collections.singletonList(portOfRegister));
         }
-        if (shipMrn != null && !shipMrn.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(shipMrn)) {
             userModel.setAttribute("ship_mrn", Collections.singletonList(shipMrn));
         }
-        if (url != null && !url.trim().isEmpty()) {
+        if (StringUtil.isNotBlank(url)) {
             userModel.setAttribute("url", Collections.singletonList(url));
         }
     }
