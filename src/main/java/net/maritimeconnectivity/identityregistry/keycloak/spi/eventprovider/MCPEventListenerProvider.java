@@ -247,9 +247,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/roles";
             HttpGet get = new HttpGet(uri);
-            CloseableHttpResponse response;
-            try {
-                response = httpClient.execute(get);
+            try (CloseableHttpResponse response = httpClient.execute(get)) {
                 int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
@@ -277,9 +275,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/acting-on-behalf-of";
             HttpGet get = new HttpGet(uri);
-            CloseableHttpResponse response;
-            try {
-                response = httpClient.execute(get);
+            try (CloseableHttpResponse response = httpClient.execute(get)) {
                 int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
@@ -306,9 +302,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
             String uri = servicePath + userMrn + "/pki-identity";
             HttpGet get = new HttpGet(uri);
-            CloseableHttpResponse response;
-            try {
-                response = httpClient.execute(get);
+            try (CloseableHttpResponse response = httpClient.execute(get)) {
                 int status = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (status != 200) {
@@ -339,16 +333,18 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             uri += "?org-name=" + URLEncoder.encode(orgName, StandardCharsets.UTF_8) + "&org-address=" + URLEncoder.encode(orgAddress, StandardCharsets.UTF_8);
         }
         HttpPost post = new HttpPost(uri);
-        CloseableHttpResponse response = null;
         try {
             String serializedUser = JsonSerialization.writeValueAsString(user);
             StringEntity input = new StringEntity(serializedUser, ContentType.APPLICATION_JSON);
             post.setEntity(input);
             log.debug("user json: " + serializedUser);
             log.debug("uri: " + uri);
-            response = httpClient.execute(post);
-            int status = response.getStatusLine().getStatusCode();
-            HttpEntity entity = response.getEntity();
+            int status;
+            HttpEntity entity;
+            try (CloseableHttpResponse response = httpClient.execute(post)) {
+                status = response.getStatusLine().getStatusCode();
+                entity = response.getEntity();
+            }
             if (status != 200) {
                 String json = getContent(entity);
                 log.errorf("User sync failed. Bad status: %s response: %s", status, json);
@@ -357,14 +353,6 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             }
         } catch (IOException e) {
             log.error("Could not send user update request", e);
-        } finally {
-            try {
-                if (response != null) {
-                    response.close();
-                }
-            } catch (IOException e) {
-                log.error("Could not close user update response", e);
-            }
         }
     }
 
