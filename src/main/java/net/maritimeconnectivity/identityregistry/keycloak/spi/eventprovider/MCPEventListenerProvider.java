@@ -146,10 +146,10 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             // check that it is actually a user
             if (user != null && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
                 List<String> uidList = user.getAttributes().get("uid");
                 if (uidList == null || uidList.isEmpty()) {
-                    pkiIdentity = getPKIIdentity(user.getUsername(), user, httpClient);
+                    pkiIdentity = getPKIIdentity(user.getUsername(), user);
                     if (pkiIdentity != null)
                         userUid = pkiIdentity.getDn();
                 }
@@ -217,25 +217,25 @@ public class MCPEventListenerProvider implements EventListenerProvider {
                     log.debugf("user attr: %s, value: %s", e.getKey(), String.join(", ", e.getValue()));
                 }
             }
-            sendUserUpdate(mcUser, orgMrn, orgName, orgAddress, httpClient);
+            sendUserUpdate(mcUser, orgMrn, orgName, orgAddress);
 
             // TODO: this should be removed when we move to the new implementation of the MSR
             // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
             if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
                 // Get the roles and the organisations that the user can act on behalf of
-                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user, httpClient);
+                getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
             }
             if ((pkiIdentity == null || userUid == null || userUid.isEmpty()) && user.getUsername().contains(":user:")) {
-                getPKIIdentity(user.getUsername(), user, httpClient);
+                getPKIIdentity(user.getUsername(), user);
             }
         }
 
     }
 
-    protected void getUserRolesAndActingOnBehalfOf(List<String> userRoles, List<String> actingOnBehalfOf, UserModel user, CloseableHttpClient httpClient) {
+    protected void getUserRolesAndActingOnBehalfOf(List<String> userRoles, List<String> actingOnBehalfOf, UserModel user) {
         userRoles.addAll(getUserRoles(user.getUsername(), httpClient));
         user.setAttribute("roles", userRoles);
-        actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername(), httpClient));
+        actingOnBehalfOf.addAll(getActingOnBehalfOf(user.getUsername()));
         user.setAttribute("actingOnBehalfOf", actingOnBehalfOf);
     }
 
@@ -269,7 +269,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         return new ArrayList<>();
     }
 
-    protected List<String> getActingOnBehalfOf(String userMrn, CloseableHttpClient httpClient) {
+    protected List<String> getActingOnBehalfOf(String userMrn) {
         if (serverRoot != null) {
             if (httpClient == null) {
                 log.error("Could not build http client");
@@ -298,7 +298,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         return new ArrayList<>();
     }
 
-    protected PKIIdentity getPKIIdentity(String userMrn, UserModel user, CloseableHttpClient httpClient) {
+    protected PKIIdentity getPKIIdentity(String userMrn, UserModel user) {
         if (serverRoot != null) {
             if (httpClient == null) {
                 log.error("Could not build http client");
@@ -330,8 +330,8 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         return null;
     }
 
-    protected void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress, CloseableHttpClient client) {
-        if (client == null) {
+    protected void sendUserUpdate(User user, String orgMrn, String orgName, String orgAddress) {
+        if (httpClient == null) {
             return;
         }
         String uri = serverRoot + "/x509/api/org/" + orgMrn + "/user-sync/";
@@ -346,7 +346,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             post.setEntity(input);
             log.debug("user json: " + serializedUser);
             log.debug("uri: " + uri);
-            response = client.execute(post);
+            response = httpClient.execute(post);
             int status = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             if (status != 200) {

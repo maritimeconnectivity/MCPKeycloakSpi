@@ -158,10 +158,10 @@ class MCPEventListenerProviderTest {
         mcpEventListenerProvider = spy(new MCPEventListenerProvider(mockedKeycloakSession, "", "src/test/resources/keystore.jks", "changeit", null, null, noSyncIdps));
 
         // Make sure the sendUserUpdate method does nothing
-        doNothing().when(mcpEventListenerProvider).sendUserUpdate(any(), any(), any(), any(), any());
-        doNothing().when(mcpEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any(), any());
+        doNothing().when(mcpEventListenerProvider).sendUserUpdate(any(), any(), any(), any());
+        doNothing().when(mcpEventListenerProvider).getUserRolesAndActingOnBehalfOf(any(), any(), any());
         PKIIdentity mockPKIIdentity = spy(new PKIIdentity());
-        given(mcpEventListenerProvider.getPKIIdentity(any(), any(), any())).willReturn(mockPKIIdentity);
+        given(mcpEventListenerProvider.getPKIIdentity(any(), any())).willReturn(mockPKIIdentity);
 
         // Call onEvent
         mcpEventListenerProvider.onEvent(this.mockedEvent);
@@ -171,8 +171,8 @@ class MCPEventListenerProviderTest {
         verify(mockedEvent, times(2)).getDetails();
         verify(mockedEvent, times(4)).getRealmId();
         verify(mockedUserModel, times(1)).getEmail();
-        verify(mcpEventListenerProvider, times(1)).sendUserUpdate(any(), eq("urn:mrn:mcl:org:dma"), eq(null), eq(null), any());
-        verify(mcpEventListenerProvider, times(2)).getPKIIdentity(eq("urn:mrn:mcl:user:dma:thc"), any(), any());
+        verify(mcpEventListenerProvider, times(1)).sendUserUpdate(any(), eq("urn:mrn:mcl:org:dma"), eq(null), eq(null));
+        verify(mcpEventListenerProvider, times(2)).getPKIIdentity(eq("urn:mrn:mcl:user:dma:thc"), any());
     }
 
 }
