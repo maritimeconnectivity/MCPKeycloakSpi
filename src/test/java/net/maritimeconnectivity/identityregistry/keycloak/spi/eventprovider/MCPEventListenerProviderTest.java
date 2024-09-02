@@ -166,7 +166,7 @@ class MCPEventListenerProviderTest {
         // Call onEvent
         mcpEventListenerProvider.onEvent(this.mockedEvent);
 
-        // Verify the execution went as planed
+        // Verify the execution went as planned
         verify(mockedEvent, times(2)).getType();
         verify(mockedEvent, times(2)).getDetails();
         verify(mockedEvent, times(4)).getRealmId();
