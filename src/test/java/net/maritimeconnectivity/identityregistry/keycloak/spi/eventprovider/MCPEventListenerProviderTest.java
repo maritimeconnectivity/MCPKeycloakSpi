@@ -1,4 +1,6 @@
-/* Copyright 2017 Danish Maritime Authority.
+/*
+ * Copyright 2017 Danish Maritime Authority.
+ * Copyright 2020 Maritime Connectivity Platform Consortium
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -116,7 +118,7 @@ class MCPEventListenerProviderTest {
         given(this.mockedEvent.getDetails()).willReturn(details);
 
         // Put "certificates" in the list of identity_providers that should be skipped.
-        String[] noSyncIdps = new String[]{ "certificates" };
+        String[] noSyncIdps = new String[]{"certificates"};
 
         mcpEventListenerProvider = new MCPEventListenerProvider(null, null, "src/test/resources/keystore.jks", "changeit", null, null, noSyncIdps);
         mcpEventListenerProvider.onEvent(this.mockedEvent);
@@ -152,7 +154,7 @@ class MCPEventListenerProviderTest {
         given(this.mockedUserModel.getAttributes()).willReturn(attrs);
 
         // Put "certificates" in the list of identity_providers that should be skipped.
-        String[] noSyncIdps = new String[]{ "certificates" };
+        String[] noSyncIdps = new String[]{"certificates"};
 
         // Create a spy version of the event listener
         mcpEventListenerProvider = spy(new MCPEventListenerProvider(mockedKeycloakSession, "", "src/test/resources/keystore.jks", "changeit", null, null, noSyncIdps));
