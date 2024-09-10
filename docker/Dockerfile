@@ -15,7 +15,7 @@ ENV KC_SPI_EVENTS_LISTENER_MCP_EVENT_LISTENER_IDP_NOT_TO_SYNC=certificates,users
 ENV KC_HTTP_RELATIVE_PATH=/auth
 
 # Add the mcp theme
-ADD themes /opt/keycloak/themes/
+COPY themes /opt/keycloak/themes/
 
 USER root
 RUN mkdir -p /mc-eventprovider-conf && chown 1000:0 /mc-eventprovider-conf
@@ -24,7 +24,7 @@ USER 1000
 
 # Download latest snapshot
 ADD --chown=1000:0 'https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=net.maritimeconnectivity.pki&a=mcp-pki&v=1.3.0-SNAPSHOT' /opt/keycloak/providers/mcp-pki.jar
-ADD --chown=1000:0 mcp-identityregistry-keycloak-spi-latest.jar /opt/keycloak/providers/
+COPY --chown=1000:0 mcp-identityregistry-keycloak-spi-latest.jar /opt/keycloak/providers/
 
 RUN /opt/keycloak/bin/kc.sh build
 
