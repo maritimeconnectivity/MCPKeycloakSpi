@@ -18,6 +18,7 @@
                             <span class="${properties.kcInputClass!} ${messagesPerField.existsError('username','password')?then('pf-m-error', '')}">
                                 <input tabindex="1" id="username" name="username" value="${(login.username!'')}" type="text" autofocus autocomplete="off"
                                        aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"
+                                       dir="ltr"
                                 />
                                 <#if messagesPerField.existsError('username','password')>
                                     <span class="pf-v5-c-form-control__utilities">
@@ -42,7 +43,7 @@
                             <span class="pf-v5-c-form__label-text">${msg("password")}</span>
                         </label>
 
-                        <div class="${properties.kcInputGroup!}">
+                        <div class="${properties.kcInputGroup!}" dir="ltr">
                             <span class="${properties.kcInputClass!}">
                                 <input tabindex="2" id="password" name="password" type="password" autocomplete="off"
                                        aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"
@@ -107,7 +108,7 @@
             </div>
         </#if>
     <#elseif section = "socialProviders" >
-        <#if realm.password && social.providers??>
+        <#if realm.password && social.providers?? social.providers?has_content>
             <div id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
                 <div style="font-size: 120%;margin-bottom: 10px">Choose the Identity Provider you wish to use for authentication:</div>
 
