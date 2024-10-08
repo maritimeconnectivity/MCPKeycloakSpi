@@ -108,7 +108,7 @@
             </div>
         </#if>
     <#elseif section = "socialProviders" >
-        <#if realm.password && social.providers?? social.providers?has_content>
+        <#if realm.password && social.providers?? && social.providers?has_content>
             <div id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
                 <div style="font-size: 120%;margin-bottom: 10px">Choose the Identity Provider you wish to use for authentication:</div>
 
