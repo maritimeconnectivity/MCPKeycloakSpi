@@ -24,7 +24,7 @@ RUN mkdir -p /mc-eventprovider-conf && chown 1000:0 /mc-eventprovider-conf
 USER 1000
 
 # Download latest snapshot
-ADD --chown=1000:0 'https://repo1.maven.org/maven2/net/maritimeconnectivity/pki/mcp-pki/1.3.0-RC1/mcp-pki-1.3.0-RC1.jar' /opt/keycloak/providers/mcp-pki.jar
+ADD --chown=1000:0 'https://repo1.maven.org/maven2/net/maritimeconnectivity/pki/mcp-pki/1.3.0-RC2/mcp-pki-1.3.0-RC2.jar' /opt/keycloak/providers/mcp-pki.jar
 COPY --chown=1000:0 mcp-identityregistry-keycloak-spi-latest.jar /opt/keycloak/providers/
 
 RUN /opt/keycloak/bin/kc.sh build
