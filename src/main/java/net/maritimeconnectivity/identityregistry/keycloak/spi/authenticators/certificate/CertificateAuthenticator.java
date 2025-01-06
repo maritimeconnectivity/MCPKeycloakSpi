@@ -16,7 +16,6 @@
  */
 package net.maritimeconnectivity.identityregistry.keycloak.spi.authenticators.certificate;
 
-import lombok.NoArgsConstructor;
 import lombok.extern.jbosslog.JBossLog;
 import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.PKIIdentity;
@@ -36,8 +35,13 @@ import java.util.List;
 import java.util.Map;
 
 @JBossLog
-@NoArgsConstructor
 public class CertificateAuthenticator implements Authenticator {
+
+    private final String clientCertHeader;
+
+    public CertificateAuthenticator(String clientCertHeader) {
+        this.clientCertHeader = clientCertHeader;
+    }
 
     /**
      * Converts the certificate in the header to a Keycloak User.
@@ -49,7 +53,7 @@ public class CertificateAuthenticator implements Authenticator {
     public void authenticate(AuthenticationFlowContext authenticationFlowContext) {
         // Get the client certificate from the HTTP header
         HttpRequest req = authenticationFlowContext.getHttpRequest();
-        List<String> certStrList = req.getHttpHeaders().getRequestHeader("X-Client-Certificate");
+        List<String> certStrList = req.getHttpHeaders().getRequestHeader(clientCertHeader);
         if (certStrList.size() != 1) {
             log.warn("No client certificate detected!");
             throw new AuthenticationFlowException("No client certificate detected!", AuthenticationFlowError.INVALID_USER);

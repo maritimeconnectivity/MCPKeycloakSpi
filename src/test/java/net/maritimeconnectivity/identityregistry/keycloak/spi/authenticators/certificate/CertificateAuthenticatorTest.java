@@ -76,7 +76,7 @@ class CertificateAuthenticatorTest {
         given(this.mockedKeycloakSession.users()).willReturn(this.mockedUserProvider);
 
         // Create the CertificateAuthenticator to test
-        this.certificateAuthenticator = new CertificateAuthenticator();
+        this.certificateAuthenticator = new CertificateAuthenticator("X-Client-Certificate");
     }
 
     /**

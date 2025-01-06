@@ -41,8 +41,12 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public void init(Config.Scope config) {
+        String clientCertHeader = config.get("client-cert-header");
+        if (clientCertHeader == null || clientCertHeader.isBlank()) {
+            clientCertHeader = "X-Client-Certificate";
+        }
         if (singleton == null) {
-            singleton = new CertificateAuthenticator();
+            singleton = new CertificateAuthenticator(clientCertHeader);
         }
     }
 
@@ -71,7 +75,7 @@ public class CertificateAuthenticatorFactory implements AuthenticatorFactory {
         return false;
     }
 
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+    private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
             AuthenticationExecutionModel.Requirement.DISABLED};
 
