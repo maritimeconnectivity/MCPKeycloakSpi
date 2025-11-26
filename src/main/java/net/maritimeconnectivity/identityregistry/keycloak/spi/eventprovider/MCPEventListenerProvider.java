@@ -146,7 +146,7 @@ public class MCPEventListenerProvider implements EventListenerProvider {
             user = session.users().getUserById(realm, event.getUserId());
             // TODO: this should be removed when we move to the new implementation of the MSR
             // check that it is actually a user
-            if (user != null && user.getUsername().contains(":user:")) {
+            if (user != null) {
                 // Get the roles and the organisations that the user can act on behalf of
                 getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
                 List<String> uidList = user.getAttributes().get("uid");
@@ -223,11 +223,11 @@ public class MCPEventListenerProvider implements EventListenerProvider {
 
             // TODO: this should be removed when we move to the new implementation of the MSR
             // If the user is new we need to get roles and orgs to act on behalf of after it has been synced
-            if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty() && user.getUsername().contains(":user:")) {
+            if (userRoles.isEmpty() && actingOnBehalfOf.isEmpty()) {
                 // Get the roles and the organisations that the user can act on behalf of
                 getUserRolesAndActingOnBehalfOf(userRoles, actingOnBehalfOf, user);
             }
-            if ((pkiIdentity == null || userUid == null || userUid.isEmpty()) && user.getUsername().contains(":user:")) {
+            if ((pkiIdentity == null || userUid == null || userUid.isEmpty())) {
                 getPKIIdentity(user.getUsername(), user);
             }
         }
