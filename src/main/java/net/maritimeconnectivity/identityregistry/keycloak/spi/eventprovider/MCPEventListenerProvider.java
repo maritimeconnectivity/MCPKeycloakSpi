@@ -44,7 +44,7 @@ import org.keycloak.util.JsonSerialization;
 
 import javax.net.ssl.SSLContext;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -374,26 +374,14 @@ public class MCPEventListenerProvider implements EventListenerProvider {
         log.debug("truststorePath path: " + truststorePath);
         KeyStore keyStore;
         KeyStore trustStore = null;
-        FileInputStream instreamTruststore = null;
-        try (FileInputStream instreamKeystore = new FileInputStream(keystorePath)) {
-            keyStore = KeyStore.getInstance("jks");
-            keyStore.load(instreamKeystore, keystorePassword.toCharArray());
+        try {
+            keyStore = KeyStore.getInstance(new File(keystorePath), keystorePassword.toCharArray());
             if (truststorePath != null && !truststorePath.isEmpty()) {
-                trustStore = KeyStore.getInstance("jks");
-                instreamTruststore = new FileInputStream(truststorePath);
-                trustStore.load(instreamTruststore, truststorePassword.toCharArray());
+                trustStore = KeyStore.getInstance(new File(truststorePath), truststorePassword.toCharArray());
             }
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
             log.error("Could not load keystore or truststore", e);
             return null;
-        } finally {
-            try {
-                if (instreamTruststore != null) {
-                    instreamTruststore.close();
-                }
-            } catch (IOException e) {
-                log.error("Could not close truststore", e);
-            }
         }
 
         // Trust own CA and all self-signed certs
