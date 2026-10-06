@@ -13,6 +13,7 @@
         <keycloak.version>26.7.3</keycloak.version>
         <maven.compiler.release>21</maven.compiler.release>
         <junit-jupiter.version>5.10.1</junit-jupiter.version>
+        <mcp-pki.version>1.4.4</mcp-pki.version>
     </properties>
 
     <dependencies>
@@ -55,7 +56,7 @@
         <dependency>
             <groupId>net.maritimeconnectivity.pki</groupId>
             <artifactId>mcp-pki</artifactId>
-            <version>1.4.3</version>
+            <version>${mcp-pki.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>
