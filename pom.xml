@@ -13,7 +13,7 @@
         <keycloak.version>26.8.2</keycloak.version>
         <maven.compiler.release>21</maven.compiler.release>
         <junit-jupiter.version>5.10.1</junit-jupiter.version>
-        <mcp-pki.version>1.4.4</mcp-pki.version>
+        <mcp-pki.version>1.4.5</mcp-pki.version>
     </properties>
 
     <dependencies>
