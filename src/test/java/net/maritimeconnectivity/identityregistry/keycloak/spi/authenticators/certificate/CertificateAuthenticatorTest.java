@@ -86,10 +86,8 @@ class CertificateAuthenticatorTest {
     void testAuthenticateNewUser() throws Exception {
         // Load the nginx
         String nginxFormatedPemCert = loadTxtFile("src/test/resources/thc-cert-nginx-format.pem");
-        // "Inject" the certificate in the mocked httpheaders
-        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList(nginxFormatedPemCert));
-        // Set the mocked UserProvide to return null when looking for existing user - this should trigger creation of new user
-        given(this.mockedUserProvider.getUserByUsername(any(RealmModel.class), any(String.class))).willReturn(null);
+        // "Inject" the certificate in the mocked httpheaders / Set the mocked UserProvide to return null when looking for existing user - this should trigger creation of new user
+        setupHttpHeadersGetRequestHeaderAndGetUserByUsernameStubs(nginxFormatedPemCert, null);
         // Create a mocked UserModel that is returned when creating the new user.
         UserModel mockedUserModel = mock(UserModel.class);
         given(this.mockedUserProvider.addUser(any(), any())).willReturn(mockedUserModel);
@@ -113,11 +111,10 @@ class CertificateAuthenticatorTest {
     void testAuthenticateUpdateUser() throws Exception {
         // Load the nginx
         String nginxFormatedPemCert = loadTxtFile("src/test/resources/thc-cert-nginx-format.pem");
-        // "Inject" the certificate in the mocked httpheaders
-        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList(nginxFormatedPemCert));
         // Create a mocked UserModel that is returned when looking for existing user
         UserModel mockedUserModel = mock(UserModel.class);
-        given(this.mockedUserProvider.getUserByUsername(any(RealmModel.class), any(String.class))).willReturn(mockedUserModel);
+        // "Inject" the certificate in the mocked httpheaders
+        setupHttpHeadersGetRequestHeaderAndGetUserByUsernameStubs(nginxFormatedPemCert, mockedUserModel);
 
         // Run the authenticator
         this.certificateAuthenticator.authenticate(this.mockedAuthFlowContext);
@@ -173,5 +170,10 @@ class CertificateAuthenticatorTest {
             fail("Loading Certificate from file failed!", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private void setupHttpHeadersGetRequestHeaderAndGetUserByUsernameStubs(String nginxFormatedPemCert, UserModel getUserByUsernameReturnValue) {
+        given(this.mockedHttpHeaders.getRequestHeader("X-Client-Certificate")).willReturn(Collections.singletonList(nginxFormatedPemCert));
+        given(this.mockedUserProvider.getUserByUsername(any(RealmModel.class), any(String.class))).willReturn(getUserByUsernameReturnValue);
     }
 }
